@@ -1,3 +1,6 @@
+DATA_DIR <- "C:\\Users\\pedro\\Dropbox\\pesquisa\\2020\\rplus\\trase\\"
+getFile <- function(file) paste0(DATA_DIR, file)
+
 require(dplyr)
 require(progressr)
 
@@ -57,4 +60,4 @@ result
 
 muniTosimu <- normalizeArea(result, "code_muni")
 
-write.csv(muniTosimu, "muni-to-simu.csv", row.names = FALSE)
+write.csv(muniTosimu, getFile("muni-to-simu.csv"), row.names = FALSE)
