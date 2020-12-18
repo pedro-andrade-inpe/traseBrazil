@@ -1,8 +1,5 @@
 
-DATA_DIR <- "C:\\Users\\pedro\\Dropbox\\pesquisa\\2020\\rplus\\trase\\"
-getFile <- function(file) paste0(DATA_DIR, file)
-
-source(getFile("common.R"))
+source("common.R")
 
 #######################################################
 cat("Reading CSV files\n")
