@@ -14,7 +14,7 @@ csv <- read.csv(soyFile, as.is = TRUE) %>%
   dplyr::filter(YEAR >= 2015) %>%
   mutate(Value = SOY_EQUIVALENT_TONNES / CONVERSION) %>%
   mutate(IMPORTER.GROUP = stringr::str_trim(IMPORTER.GROUP)) %>%
-  mergeSoyIMPORTER.GROUP(0.999) %>%
+  mergeSoyIMPORTER.GROUP(0.999, "soy") %>%
   mapCOUNTRY() %>%
   mapMUNICIPALITY()
 

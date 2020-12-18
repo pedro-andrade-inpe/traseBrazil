@@ -19,7 +19,7 @@ csv3 <- read.csv(beefFile3, as.is = TRUE)
 csv <- rbind(csv1, csv2, csv3) %>%
   mutate(Value = BEEF_EQUIVALENT_TONNES / CONVERSION) %>%
   mutate(IMPORTER.GROUP = stringr::str_trim(IMPORTER.GROUP)) %>%
-  mergeBeefIMPORTER.GROUP(0.95) %>%
+  mergeBeefIMPORTER.GROUP(0.95, "beef") %>%
   mapCOUNTRY() %>%
   mapMUNICIPALITY()
 

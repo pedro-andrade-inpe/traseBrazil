@@ -11,7 +11,7 @@ DATA_DIR <- "C:\\Users\\pedro\\Dropbox\\pesquisa\\2020\\rplus\\trase\\"
 
 getFile <- function(file) paste0(DATA_DIR, file)
 
-mergeSoyIMPORTER.GROUP <- function(csv, perc){
+mergeSoyIMPORTER.GROUP <- function(csv, perc, groupedFile){
   #######################################################
   cat("Merging soy importers\n")
   #######################################################
@@ -87,12 +87,11 @@ mergeSoyIMPORTER.GROUP <- function(csv, perc){
   csv$IMPORTER.GROUP = sub("YE CHERNG IND PRODUCTS CO , LTD", "YE CHENG INDUSTRIA PROD CO LTD", csv$IMPORTER.GROUP)
   csv$IMPORTER.GROUP = sub("YE CHERNG INDUSTRIAL PRODUCTS CO , LTD", "YE CHENG INDUSTRIA PROD CO LTD", csv$IMPORTER.GROUP)
 
-  csv$IMPORTER.GROUP = gsub(" ", "_", csv$IMPORTER.GROUP)
-    
-  return(groupIMPORTER.GROUP(csv, perc))
+  csv <- cleanSpecialCharacters(csv)
+  return(groupIMPORTER.GROUP(csv, perc, groupedFile))
 }
 
-mergeBeefIMPORTER.GROUP <- function(csv, perc){
+mergeBeefIMPORTER.GROUP <- function(csv, perc, groupedFile){
   #######################################################
   cat("Merging beef importers\n")
   #######################################################
@@ -194,12 +193,12 @@ mergeBeefIMPORTER.GROUP <- function(csv, perc){
   csv$IMPORTER.GROUP = sub("YC HK FOODS", "YC HONGKONG FOODS", csv$IMPORTER.GROUP)
   csv$IMPORTER.GROUP = sub("YL FOODS", "YL TRADING INTERNATIONAL", csv$IMPORTER.GROUP)
 
-  csv$IMPORTER.GROUP = gsub(" ", "_", csv$IMPORTER.GROUP)
+  csv <- cleanSpecialCharacters(csv)
 
-  return(groupIMPORTER.GROUP(csv, perc))
+  return(groupIMPORTER.GROUP(csv, perc, groupedFile))
 }
 
-groupIMPORTER.GROUP <- function(csv, perc){
+groupIMPORTER.GROUP <- function(csv, perc, groupedFile){
   #######################################################
   cat(paste0("Renaming out of ", perc * 100, "% as OTHER\n"))
   #######################################################
@@ -218,6 +217,11 @@ groupIMPORTER.GROUP <- function(csv, perc){
     arrange(desc(Value)) %>%
     mutate(cumsum = cumsum(Value)) %>%
     filter(cumsum <= total * perc)
+
+  ww2$IMPORTER.GROUP %>% 
+    unique() %>%
+    sort() %>% 
+    write.table(getFile(paste0("result/trase-joined-", groupedFile, "-as-other.txt")), quote = FALSE, row.names = FALSE, col.names = FALSE)
 
   # merging the less relevant companies
   csv <- csv %>%
@@ -259,6 +263,8 @@ mapCOUNTRY <- function(csv){
   csv$COUNTRY = sub("Vietnam", "VietNam", csv$COUNTRY)
   csv$COUNTRY = sub("OccupiedPalestinianTerritory", "Palestin", csv$COUNTRY)
 
+  csv <- cleanSpecialCharacters(csv)
+  
   return(csv)
 }
 
