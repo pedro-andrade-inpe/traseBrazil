@@ -84,3 +84,8 @@ cat("Joining and exporting data\n")
 countryGms <- buildGmsByPairs(csv)
 writeGmsByPairs(countryGms, "beef")
 
+
+csv$IMPORTER.GROUP %>% 
+  unique() %>%
+  sort() %>% 
+  write.table(getFile(paste0("result/trase-importer-beef.txt")), quote = FALSE, row.names = FALSE, col.names = FALSE)

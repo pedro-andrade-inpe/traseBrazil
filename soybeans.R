@@ -33,3 +33,7 @@ gms <- buildGmsByPairs(csv)
 
 writeGmsByPairs(gms, "soybeans")
 
+csv$IMPORTER.GROUP %>% 
+  unique() %>%
+  sort() %>% 
+  write.table(getFile(paste0("result/trase-importer-soy.txt")), quote = FALSE, row.names = FALSE, col.names = FALSE)
