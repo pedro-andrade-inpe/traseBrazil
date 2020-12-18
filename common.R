@@ -400,16 +400,21 @@ buildGmsByPairs <- function(csv){
   return(result)
 }
 
-writeGmsByPairs <- function(result, fileName){
+writeGmsByPairs <- function(result, name){
   result <- result %>%
     dplyr::mutate(value = round(value, 6)) %>%
     dplyr::filter(value > 0) %>%
     dplyr::arrange(ID)
   
   res <- paste0("Brazil.", result$ID, ".", result$IMPORTER.GROUP, ".", result$country, ".", result$year, "\t", result$value) %>%
+    c("/", ";") %>%
     data.frame()
+
+  colnames(res) <- paste0("PARAMETER ",
+                          name,
+                          "_TRASE\n(COUNTRY,SimUID,ALLTRADER,ALLCOUNTRY,ALLSCENYEAR) ",
+                          name,
+                          " sourcing in kton per SimU\n/")
   
-  colnames(res) <- paste("PARAMETER Soybeans_TRASE\n(COUNTRY,ALLCOLROW,ALTICLASS,SLPCLASS,SOILCLASS,AEZCLASS,ALLTRADER,ALLCOUNTRY,ALLSCENYEAR) soybeans sourcing in kton per SimU\n\\")
-  
-  write.table(res, paste0(fileName), row.names = FALSE, quote = FALSE)
+  write.table(res, getFile(paste0("result/trase-", name , ".gms")), row.names = FALSE, quote = FALSE)
 }
