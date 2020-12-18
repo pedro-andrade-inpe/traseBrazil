@@ -29,8 +29,17 @@ cat("Joining and exporting data\n")
 
 gms <- buildGmsByPairs(csv)
 
+euFile <- getFile("eu-countries.csv")
+eu <- read.csv(euFile)
 
+gms_eu <- gms %>%
+  dplyr::mutate(country = ifelse(country %in% !!eu$country, "EU", country)) %>%
+  dplyr::filter(country == "EU") %>%
+  dplyr::group_by(ID, IMPORTER.GROUP, country, year) %>%
+  dplyr::summarise(value = sum(value), .groups = "drop") 
 
+gms <- rbind(gms, gms_eu) %>%
+  dplyr::arrange(ID, IMPORTER.GROUP, year)
 
 writeGmsByPairs(gms, "soybeans")
 
