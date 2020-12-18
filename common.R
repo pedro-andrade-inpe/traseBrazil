@@ -11,6 +11,16 @@ DATA_DIR <- "C:\\Users\\pedro\\Dropbox\\pesquisa\\2020\\rplus\\trase\\"
 
 getFile <- function(file) paste0(DATA_DIR, file)
 
+cleanSpecialCharacters <- function(csv){
+  csv$IMPORTER.GROUP = sub("\\&", "_", csv$IMPORTER.GROUP)
+  csv$IMPORTER.GROUP = sub("\\.", "_", csv$IMPORTER.GROUP)
+  csv$IMPORTER.GROUP = gsub(" ", "_", csv$IMPORTER.GROUP)
+  csv$IMPORTER.GROUP = gsub(",", "_", csv$IMPORTER.GROUP)
+  csv$IMPORTER.GROUP = gsub("\\(", "_", csv$IMPORTER.GROUP)
+  csv$IMPORTER.GROUP = gsub("\\)", "_", csv$IMPORTER.GROUP)
+
+  return(csv)
+}
 mergeSoyIMPORTER.GROUP <- function(csv, perc, groupedFile){
   #######################################################
   cat("Merging soy importers\n")
