@@ -21,7 +21,9 @@ csv <- rbind(csv1, csv2, csv3) %>%
   mutate(IMPORTER.GROUP = stringr::str_trim(IMPORTER.GROUP)) %>%
   mergeBeefIMPORTER.GROUP(0.95, "beef") %>%
   mapCOUNTRY() %>%
-  mapMUNICIPALITY()
+  mapMUNICIPALITY() %>%
+  distributeUnknownValue() %>%
+  distributeAggregated()
 
 shp <- getMunicipalities()
 

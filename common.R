@@ -21,6 +21,79 @@ cleanSpecialCharacters <- function(csv){
 
   return(csv)
 }
+
+# distribute UNKNOWN value proportionally to the other values
+distributeUnknownValue <- function(csv){
+  #######################################################
+  cat("Distributing unknown\n")
+  #######################################################
+
+  total1 <- sum(csv$Value)
+
+  total <- csv %>%
+    dplyr::group_by(YEAR) %>%
+    dplyr::summarise(Total = sum(Value), .groups = "drop")
+
+  unknownValue <- csv %>%
+    dplyr::filter(str_detect(MUNICIPALITY, "^UNKNOWN")) %>%
+    dplyr::group_by(YEAR) %>%
+    dplyr::summarise(Value = sum(Value), .groups = "drop") %>%
+    dplyr::left_join(total, by = "YEAR") %>%
+    dplyr::mutate(multiplier = 1 + Value / (Total - Value)) %>%
+    dplyr::select(YEAR, multiplier)
+
+  if(dim(unknownValue)[1] == 0) return(csv) # nothing to be distributed
+
+  csv <- csv %>%
+    dplyr::filter(!str_detect(MUNICIPALITY, "^UNKNOWN")) %>%
+    dplyr::left_join(unknownValue, by = "YEAR") %>%
+    dplyr::mutate(Value = Value * multiplier) %>%
+    dplyr::select(-multiplier)
+
+  total2 <- sum(csv$Value)
+  
+  testthat::expect_equal(total1, total2, 0.00001)
+  
+  return(csv)
+}
+
+# distribute AGGREGATED values proportionally within the respective states
+distributeAggregated <- function(csv){
+  #######################################################
+  cat("Distributing aggregated\n")
+  #######################################################
+
+  total1 <- sum(csv$Value)
+
+  total <- csv %>%
+    dplyr::group_by(STATE, YEAR) %>%
+    dplyr::summarise(Total = sum(Value), .groups = "drop")
+  
+  aggregatedValue <- csv %>%
+    dplyr::filter(str_detect(MUNICIPALITY, "^AGGREGATED")) %>%
+    dplyr::group_by(STATE, YEAR) %>%
+    dplyr::summarise(Value = sum(Value), .groups = "drop") %>%
+    dplyr::left_join(total, by = c("STATE", "YEAR")) %>%
+    dplyr::mutate(multiplier = 1 + Value / (Total - Value)) %>%
+    dplyr::select(STATE, YEAR, multiplier)
+  
+  if(dim(aggregatedValue)[1] == 0) return(csv) # nothing to be distributed
+
+  csv <- csv %>%
+    dplyr::filter(!str_detect(MUNICIPALITY, "^AGGREGATED")) %>%
+    dplyr::left_join(aggregatedValue, by = c("STATE", "YEAR")) %>%
+    dplyr::mutate(Value = Value * multiplier) %>%
+    dplyr::select(-multiplier)
+  
+  total2 <- sum(csv$Value)
+
+  testthat::expect_equal(total1, total2, 0.07) 
+  # some error because there are states with only aggregated municipalities, therefore
+  # this data cannot be spread
+  
+  return(csv)
+}
+
 mergeSoyIMPORTER.GROUP <- function(csv, perc, groupedFile){
   #######################################################
   cat("Merging soy importers\n")
@@ -321,8 +394,12 @@ mapMUNICIPALITY = function(csv){
   
   # all the data with unknown municipality or aggregated (that have a state)
   # will be set as unknown
+  # these data must be removed by functions distributeUnknownValue() and distributeAggregated()
   csv$code = str_replace(csv$code, "aggregated .*", "unknown-us")
   csv$code = str_replace(csv$code, "unknown municipality .*", "unknown-us")
+
+  # do not do this to guarantee that these values will be removed
+  # csv <- csv %>% dplyr::filter(code != "unknown-us")
   
   return(csv)
 }
@@ -375,8 +452,7 @@ buildGmsByPairs <- function(csv){
     cat(paste("Processing year", year, "\n"))
     csv_year <- csv %>%
       dplyr::filter(YEAR == !!year) %>%
-      dplyr::select(YEAR, IMPORTER.GROUP, COUNTRY, TRASE_GEOCODE, Value, code) %>%
-      dplyr::filter(code != "unknown-us")
+      dplyr::select(YEAR, IMPORTER.GROUP, COUNTRY, TRASE_GEOCODE, Value, code)
     
     countries <- csv_year$COUNTRY %>% unique() %>% sort()
     

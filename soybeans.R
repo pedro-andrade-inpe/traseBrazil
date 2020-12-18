@@ -16,7 +16,8 @@ csv <- read.csv(soyFile, as.is = TRUE) %>%
   mutate(IMPORTER.GROUP = stringr::str_trim(IMPORTER.GROUP)) %>%
   mergeSoyIMPORTER.GROUP(0.999, "soy") %>%
   mapCOUNTRY() %>%
-  mapMUNICIPALITY()
+  mapMUNICIPALITY() %>%
+  distributeUnknownValue()
 
 shp <- getMunicipalities()
 
