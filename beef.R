@@ -57,7 +57,7 @@ full_state_data <- csv %>%
   mutate(uf = tolower(Sigla)) %>%
   group_by(uf, YEAR) %>%
   filter(code != "unknown-us") %>%
-  summarize(beef = round(sum(BEEF_EQUIVALENT_TONNES), 2), .groups = "drop") %>%
+  summarize(beef = round(sum(Value), 2), .groups = "drop") %>%
   tidyr::pivot_wider(names_from = YEAR, values_from = beef, names_prefix = "trase_b_") %>%
   merge(pta, by = "uf") %>%
   replace(is.na(.), 0) %>%
