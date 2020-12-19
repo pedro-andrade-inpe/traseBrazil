@@ -337,9 +337,9 @@ groupIMPORTER.GROUP <- function(csv, perc, groupedFile){
   total <- sum(ww$Value)
   
   ww2 <- ww %>% 
-    arrange(desc(Value)) %>%
-    mutate(cumsum = cumsum(Value)) %>%
-    filter(cumsum <= total * perc)
+    dplyr::arrange(desc(Value)) %>%
+    dplyr::mutate(cumsum = cumsum(Value)) %>%
+    dplyr::filter(cumsum <= total * perc)
 
   ww2$IMPORTER.GROUP %>% 
     unique() %>%
@@ -348,7 +348,7 @@ groupIMPORTER.GROUP <- function(csv, perc, groupedFile){
 
   # merging the less relevant companies
   csv <- csv %>%
-    mutate(IMPORTER.GROUP = ifelse(IMPORTER.GROUP %in% ww2$IMPORTER.GROUP, IMPORTER.GROUP, "OTHER"))
+    dplyr::mutate(IMPORTER.GROUP = ifelse(IMPORTER.GROUP %in% ww2$IMPORTER.GROUP, IMPORTER.GROUP, "OTHER"))
 
   return(csv)
 }
