@@ -48,6 +48,8 @@ pta <- pta %>%
   select(uf, pta_b_2015, pta_b_2016, pta_b_2017) %>%
   arrange(uf)
    
+mystates <- getStates()
+
 pta$uf <- tolower(unlist(mystates)[-28])
 
 full_state_data <- csv %>%

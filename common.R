@@ -351,12 +351,8 @@ mapCOUNTRY <- function(csv){
   return(csv)
 }
 
-mapMUNICIPALITY = function(csv){
-  #######################################################
-  cat("Renaming municipalities\n")
-  #######################################################
-  
-  mystates = list(
+getStates <- function(){
+  states <- list(
     ACRE = "AC", ALAGOAS = "AL", AMAPA = "AP", AMAZONAS = "AM", BAHIA = "BA", CEARA = "CE",
     `DISTRITO FEDERAL` = "DF",  `ESPIRITO SANTO` = "ES", GOIAS = "GO", MARANHAO = "MA",
     `MATO GROSSO` = "MT", `MATO GROSSO DO SUL` = "MS", `MINAS GERAIS` = "MG", PARA = "PA",
@@ -365,6 +361,16 @@ mapMUNICIPALITY = function(csv){
     RONDONIA = "RO", RORAIMA = "RR",  `SAO PAULO` = "SP", `SANTA CATARINA` = "SC", SERGIPE = "SE",
     TOCANTINS = "TO", `UNKNOWN STATE` = "US"
   )
+  
+  return(states)
+}
+
+mapMUNICIPALITY = function(csv){
+  #######################################################
+  cat("Renaming municipalities\n")
+  #######################################################
+  
+  mystates <- getStates()
   
   csv$Sigla = unlist(mystates[csv$STATE])
   
