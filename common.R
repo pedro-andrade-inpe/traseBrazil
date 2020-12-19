@@ -31,28 +31,48 @@ distributeUnknownValue <- function(csv){
   total1 <- sum(csv$Value)
 
   total <- csv %>%
-    dplyr::group_by(YEAR) %>%
+    dplyr::group_by(COUNTRY, YEAR) %>%
     dplyr::summarise(Total = sum(Value), .groups = "drop")
 
   unknownValue <- csv %>%
     dplyr::filter(str_detect(MUNICIPALITY, "^UNKNOWN")) %>%
-    dplyr::group_by(YEAR) %>%
+    dplyr::group_by(COUNTRY, YEAR) %>%
     dplyr::summarise(Value = sum(Value), .groups = "drop") %>%
-    dplyr::left_join(total, by = "YEAR") %>%
+    dplyr::left_join(total, by = c("COUNTRY", "YEAR")) %>%
     dplyr::mutate(multiplier = 1 + Value / (Total - Value)) %>%
-    dplyr::select(YEAR, multiplier)
+    dplyr::select(COUNTRY, YEAR, multiplier, Value)
+
+  infCountries <- unknownValue %>%
+    dplyr::filter(is.infinite(multiplier)) %>%
+    dplyr::mutate(country_year = paste0(COUNTRY, "(", YEAR, ")")) %>%
+    `$`("country_year") %>%
+    unique() %>%
+    sort()
+
+  totalInf <- unknownValue %>%
+    dplyr::filter(is.infinite(multiplier)) %>%
+    `$`("Value") %>%
+    sum() %>%
+    round(2)
+
+  cat(paste0("Production with unknown origin and no municipality to be used ", totalInf, " (", round(totalInf / total1 * 100, 4), "% of the total)"))
 
   if(dim(unknownValue)[1] == 0) return(csv) # nothing to be distributed
 
+  unknownValue <- unknownValue %>%
+    dplyr::select(-Value)
+
   csv <- csv %>%
     dplyr::filter(!str_detect(MUNICIPALITY, "^UNKNOWN")) %>%
-    dplyr::left_join(unknownValue, by = "YEAR") %>%
+    dplyr::left_join(unknownValue, by = c("COUNTRY", "YEAR")) %>%
+    dplyr::filter(!is.infinite(multiplier)) %>%
+    dplyr::mutate(multiplier = ifelse(is.na(multiplier), 1, multiplier)) %>%
     dplyr::mutate(Value = Value * multiplier) %>%
     dplyr::select(-multiplier)
 
   total2 <- sum(csv$Value)
   
-  testthat::expect_equal(total1, total2, 0.00001)
+  testthat::expect_equal(total1 - totalInf, total2, 0.00001)
   
   return(csv)
 }
@@ -66,28 +86,48 @@ distributeAggregated <- function(csv){
   total1 <- sum(csv$Value)
 
   total <- csv %>%
-    dplyr::group_by(STATE, YEAR) %>%
+    dplyr::group_by(COUNTRY, STATE, YEAR) %>%
     dplyr::summarise(Total = sum(Value), .groups = "drop")
   
   aggregatedValue <- csv %>%
     dplyr::filter(str_detect(MUNICIPALITY, "^AGGREGATED")) %>%
-    dplyr::group_by(STATE, YEAR) %>%
+    dplyr::group_by(COUNTRY, STATE, YEAR) %>%
     dplyr::summarise(Value = sum(Value), .groups = "drop") %>%
-    dplyr::left_join(total, by = c("STATE", "YEAR")) %>%
+    dplyr::left_join(total, by = c("COUNTRY", "STATE", "YEAR")) %>%
     dplyr::mutate(multiplier = 1 + Value / (Total - Value)) %>%
-    dplyr::select(STATE, YEAR, multiplier)
+    dplyr::select(COUNTRY, STATE, YEAR, multiplier, Value)
   
+  infCountries <- aggregatedValue %>%
+    dplyr::filter(is.infinite(multiplier)) %>%
+    dplyr::group_by(COUNTRY) %>%
+    dplyr::summarise(Value = sum(Value), .groups = "drop") %>%
+    dplyr::arrange(COUNTRY)
+
+  totalInf <- aggregatedValue %>%
+    dplyr::filter(is.infinite(multiplier)) %>%
+    `$`("Value") %>%
+    sum() %>%
+    round(2)
+  
+  cat(paste0("Production with unknown origin and no municipality to be used ", totalInf, " (", round(totalInf / total1 * 100, 4), "% of the total)"))
+
   if(dim(aggregatedValue)[1] == 0) return(csv) # nothing to be distributed
 
+  aggregatedValue <- aggregatedValue %>%
+    dplyr::select(-Value)
+  
   csv <- csv %>%
     dplyr::filter(!str_detect(MUNICIPALITY, "^AGGREGATED")) %>%
-    dplyr::left_join(aggregatedValue, by = c("STATE", "YEAR")) %>%
+    dplyr::left_join(aggregatedValue, by = c("COUNTRY", "STATE", "YEAR")) %>%
+    dplyr::filter(!is.infinite(multiplier)) %>%
+    dplyr::mutate(multiplier = ifelse(is.na(multiplier), 1, multiplier)) %>%
     dplyr::mutate(Value = Value * multiplier) %>%
     dplyr::select(-multiplier)
   
   total2 <- sum(csv$Value)
 
-  testthat::expect_equal(total1, total2, 0.07) 
+  testthat::expect_equal(total1 - totalInf, total2, 0.01)
+  
   # some error because there are states with only aggregated municipalities, therefore
   # this data cannot be spread
   
