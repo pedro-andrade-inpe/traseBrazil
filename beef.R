@@ -20,7 +20,42 @@ csv <- rbind(csv1, csv2, csv3) %>%
   mapCOUNTRY() %>%
   mapMUNICIPALITY() %>%
   distributeUnknownValue() %>%
-  distributeAggregated()
+  distributeAggregated() %>%
+  dplyr::select(YEAR, code, IMPORTER, IMPORTER.GROUP, TRASE_GEOCODE, COUNTRY, Value)
+
+load(getFile("2020-07-17-BRA_BEEF_SEIPCS.rdata"))
+  
+prod <- prod %>%
+  dplyr::mutate(TRASE_GEOCODE = paste0("BR-", GEOCODE)) %>%
+  dplyr::mutate(PRODUCTION_KTONS_YR = CW_PRODUCTION_TONS_5_YR / 1000 / 5)
+
+res <- csv %>%
+  dplyr::group_by(YEAR, TRASE_GEOCODE, code) %>%
+  dplyr::summarise(Value = sum(Value), .groups = "drop") %>%
+  dplyr::full_join(prod, by = c("TRASE_GEOCODE", "YEAR")) %>%
+  dplyr::mutate(Internal = PRODUCTION_KTONS_YR - Value)
+
+res %>% dplyr::filter(Internal < 0) %>%
+  dplyr::group_by(YEAR) %>%
+  summarize(Value = sum(Internal))
+#<dbl>  <dbl>
+# 1  2015 -105. 
+# 2  2016 -113. 
+# 3  2017  -99.6
+
+internal <- res %>%
+  dplyr::filter(Internal > 0) %>%
+  dplyr::mutate(Value = Internal) %>%
+  dplyr::select(-CW_PRODUCTION_TONS_5_YR, -GEOCODE, -Internal, -PRODUCTION_KTONS_YR) %>%
+  dplyr::mutate(COUNTRY = "Brazil") %>%
+  dplyr::mutate(IMPORTER = "DOMESTIC_CONSUMPTION") %>%
+  dplyr::mutate(IMPORTER.GROUP = "DOMESTIC_CONSUMPTION") %>%
+  dplyr::relocate(names(csv))
+
+
+testthat::expect_true(all.equal(names(csv), names(internal)))
+
+csv <- rbind(csv, internal)
 
 shp <- getMunicipalities()
 
