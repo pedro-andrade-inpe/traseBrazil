@@ -14,7 +14,8 @@ csv <- read.csv(soyFile, as.is = TRUE) %>%
   mergeSoyIMPORTER.GROUP(0.999, "soy") %>%
   mapCOUNTRY() %>%
   mapMUNICIPALITY() %>%
-  distributeUnknownValue()
+  distributeUnknownValue() %>%
+  dplyr::select(YEAR, code, IMPORTER, IMPORTER.GROUP, TRASE_GEOCODE, COUNTRY, Value)
 
 shp <- getMunicipalities()
 

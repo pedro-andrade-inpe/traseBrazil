@@ -55,7 +55,7 @@ distributeUnknownValue <- function(csv){
     sum() %>%
     round(2)
 
-  cat(paste0("Production with unknown origin and no municipality to be used ", totalInf, " (", round(totalInf / total1 * 100, 4), "% of the total)"))
+  cat(paste0("Production with unknown origin and no municipality to be used ", totalInf, " (", round(totalInf / total1 * 100, 4), "% of the total)\n"))
 
   if(dim(unknownValue)[1] == 0) return(csv) # nothing to be distributed
 
@@ -109,7 +109,7 @@ distributeAggregated <- function(csv){
     sum() %>%
     round(2)
   
-  cat(paste0("Production with unknown origin and no municipality to be used ", totalInf, " (", round(totalInf / total1 * 100, 4), "% of the total)"))
+  cat(paste0("Production with origin aggregated by state and no municipality to be used ", totalInf, " (", round(totalInf / total1 * 100, 4), "% of the total)\n"))
 
   if(dim(aggregatedValue)[1] == 0) return(csv) # nothing to be distributed
 
