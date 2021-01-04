@@ -68,6 +68,20 @@ checkMunicipalities(csv, shp)
 ####################################################
 # national production using pta joining with Trase by state
 
+# From Trase report:
+# We calculated the slaughter rate as the number of cattle slaughtered divided by herd size per
+# state (IEG FNP Agribusiness 2019; IBGE 2015), accounting for inter-state movements to slaughter
+# (MAPA 2018a). In Amazonas, Amap?, Pernambuco, and Bahia slaughter rates exceeded 25%, despite low
+# intensity cattle ranching in each state, so we correct these outliers to the nationwide average
+# for 2015-2017, of 18.1% (ABIEC 2016, 2017, 2018). The slaughter rate for S?o Paulo, where our
+# calculations otherwise underestimated production, was also corrected to 40.72%, based on
+# published estimates (Instituto de Economia Agr?cola 2017, 2018; Assocon 2007).
+
+# this solution does not work because sao paulo state exports (Trase) more than produces (IBGE).
+# We decided to use the data in the supplementary information of
+# zu Ermgassen, E.K.H.J., Godar, J., Lathuillière, M.J., Löfgren, P., Vasconcelos, A., Gardner, T. 
+# and Meyfroidt, P., 2020. The origin, supply chain, and deforestation footprint of Brazil’s beef exports.
+
 pta <- read.csv(getFile("ibge/pta_tabela1092_abate_bovino.csv"), sep = ";", skip = 3)
 pta <- pta[71:97, -(c(2:74, 87:96))] # 2015 to 2017
 
@@ -85,7 +99,7 @@ pta <- pta %>%
   mutate(pta_b_2017 = round((t9 + t10 + t11 + t12) / myconversion, 2)) %>%
   select(uf, pta_b_2015, pta_b_2016, pta_b_2017) %>%
   arrange(uf)
-   
+
 mystates <- getStates()
 
 pta$uf <- tolower(unlist(mystates)[-28])
@@ -113,6 +127,7 @@ full_state_data <- csv %>%
 ppm <- read.csv(getFile("ibge/ppm_tabela3939_efetivo_rebanho_bovino.csv"), sep = ";", skip = 3)
 ppm <- ppm[-1, ]
 ppm
+
 ####################################################
 ####################################################
 
