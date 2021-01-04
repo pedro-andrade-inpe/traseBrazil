@@ -458,7 +458,7 @@ getMunicipalities <- function(){
   shp <- read_municipality(year = 2017) %>%
     as.data.frame() %>%
     dplyr::mutate(code = tolower(paste0(name_muni, "-", abbrev_state))) %>%
-    dplyr::mutate(code = chartr("áéíóúâêôãõç", "aeiouaeoaoc", code)) %>%
+    dplyr::mutate(code = stringi::stri_trans_general(code, id="Latin-ASCII")) %>%
     dplyr::mutate(code = sub("'", "", code)) %>%
     dplyr::select(code_muni, code)
   
