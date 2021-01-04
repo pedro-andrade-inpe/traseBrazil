@@ -99,7 +99,7 @@ distributeAggregated <- function(csv){
   
   infCountries <- aggregatedValue %>%
     dplyr::filter(is.infinite(multiplier)) %>%
-    dplyr::group_by(COUNTRY) %>%
+    dplyr::group_by(COUNTRY, STATE, YEAR) %>%
     dplyr::summarise(Value = sum(Value), .groups = "drop") %>%
     dplyr::arrange(COUNTRY)
 
