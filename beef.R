@@ -35,13 +35,16 @@ res <- csv %>%
   dplyr::full_join(prod, by = c("TRASE_GEOCODE", "YEAR")) %>%
   dplyr::mutate(Internal = PRODUCTION_KTONS_YR - Value)
 
-res %>% dplyr::filter(Internal < 0) %>%
+difference <- res %>% dplyr::filter(Internal < 0) %>%
   dplyr::group_by(YEAR) %>%
   summarize(Value = sum(Internal))
 #<dbl>  <dbl>
 # 1  2015 -105. 
 # 2  2016 -113. 
 # 3  2017  -99.6
+
+sum(difference$Value)/ sum(prod$PRODUCTION_KTONS_YR) * 100
+# -0.9252067
 
 internal <- res %>%
   dplyr::filter(Internal > 0) %>%
