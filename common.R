@@ -2,7 +2,7 @@ require(dplyr)
 require(sf)
 require(geobr)
 require(stringr)
-require(testthat)
+require(assertthat)
 require(colrow) #devtools::install_github("pedro-andrade-inpe/colrow")
 
 CONVERSION <- 1e3 # thousand ton
@@ -72,7 +72,7 @@ distributeUnknownValue <- function(csv){
 
   total2 <- sum(csv$Value)
   
-  testthat::expect_equal(total1 - totalInf, total2, 0.00001)
+  assertthat::are_equal(total1 - totalInf, total2, tol = 0.00001)
   
   return(csv)
 }
@@ -126,7 +126,7 @@ distributeAggregated <- function(csv){
   
   total2 <- sum(csv$Value)
 
-  testthat::expect_equal(total1 - totalInf, total2, 0.01)
+  assertthat::are_equal(total1 - totalInf, total2, tol = 0.01)
   
   # some error because there are states with only aggregated municipalities, therefore
   # this data cannot be spread
@@ -483,7 +483,7 @@ checkMunicipalities <- function(csv, shp){
   }
   
   if(length(err) > 0) print(names(err)) # municipalities with some problem to match Trase and IBGE
-  testthat::expect_equal(length(err), 0)
+  assertthat::are_equal(length(err), 0)
 }
 
 buildGmsByPairs <- function(csv){
@@ -507,7 +507,7 @@ buildGmsByPairs <- function(csv){
       
       csv_muni <- dplyr::left_join(csv_object, shp, "code") 
       
-      testthat::expect_true(all(csv_object$TRASE_GEOCODE == paste0("BR-", csv_muni$code_muni))) # check if everything is ok
+      assertthat::assert_that(all(csv_object$TRASE_GEOCODE == paste0("BR-", csv_muni$code_muni))) # check if everything is ok
       
       csv_muni <- csv_muni %>%
         dplyr::select(Value, code_muni, IMPORTER.GROUP)
@@ -521,7 +521,7 @@ buildGmsByPairs <- function(csv){
       
       result_simu <- rbind(result_simu, simu)
       
-      testthat::expect_equal(sum(simu$value), sum(csv_object$Value))
+      assertthat::are_equal(sum(simu$value), sum(csv_object$Value))
     }
     
     total <- result_simu %>%

@@ -55,8 +55,7 @@ internal <- res %>%
   dplyr::mutate(IMPORTER.GROUP = "DOMESTIC_CONSUMPTION") %>%
   dplyr::relocate(names(csv))
 
-
-testthat::expect_true(all.equal(names(csv), names(internal)))
+assertthat::assert_that(all.equal(names(csv), names(internal)))
 
 csv <- rbind(csv, internal)
 
