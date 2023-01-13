@@ -10,12 +10,12 @@ soyFile <- getFile("BRAZIL_SOY_2.5.1_pc\\BRAZIL_SOY_2.5.1_pc.csv")
 csv <- read.csv(soyFile, as.is = TRUE) %>%
   dplyr::filter(YEAR >= 2015) %>%
   mutate(Value = SOY_EQUIVALENT_TONNES / CONVERSION) %>%
-  mutate(IMPORTER.GROUP = stringr::str_trim(IMPORTER.GROUP)) %>%
-  mergeSoyIMPORTER.GROUP(0.999, "soy") %>%
+  mutate(EXPORTER.GROUP = stringr::str_trim(EXPORTER.GROUP)) %>%
+  #mergeSoyIMPORTER.GROUP(0.999, "soy") %>%
   mapCOUNTRY() %>%
   mapMUNICIPALITY() %>%
   distributeUnknownValue() %>%
-  dplyr::select(YEAR, code, IMPORTER, IMPORTER.GROUP, TRASE_GEOCODE, COUNTRY, Value)
+  dplyr::select(YEAR, code, EXPORTER, EXPORTER.GROUP, TRASE_GEOCODE, COUNTRY, Value)
 
 shp <- getMunicipalities()
 
@@ -33,15 +33,15 @@ eu <- read.csv(euFile)
 gms_eu <- gms %>%
   dplyr::mutate(country = ifelse(country %in% !!eu$country, "EU", country)) %>%
   dplyr::filter(country == "EU") %>%
-  dplyr::group_by(ID, IMPORTER.GROUP, country, year) %>%
+  dplyr::group_by(ID, EXPORTER.GROUP, country, year) %>%
   dplyr::summarise(value = sum(value), .groups = "drop") 
 
 gms <- rbind(gms, gms_eu) %>%
-  dplyr::arrange(ID, IMPORTER.GROUP, year)
+  dplyr::arrange(ID, EXPORTER.GROUP, year)
 
-writeGmsByPairs(gms, "soybeans")
+writeGmsByPairs(gms, "soybeans-exporter")
 
-csv$IMPORTER.GROUP %>% 
+csv$EXPORTER.GROUP %>% 
   unique() %>%
   sort() %>% 
-  write.table(getFile(paste0("result/trase-importer-soy.txt")), quote = FALSE, row.names = FALSE, col.names = FALSE)
+  write.table(getFile(paste0("result/trase-exporter-soy.txt")), quote = FALSE, row.names = FALSE, col.names = FALSE)

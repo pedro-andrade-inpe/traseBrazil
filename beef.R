@@ -15,13 +15,13 @@ csv3 <- read.csv(beefFile3, as.is = TRUE)
 
 csv <- rbind(csv1, csv2, csv3) %>%
   mutate(Value = BEEF_EQUIVALENT_TONNES / CONVERSION) %>%
-  mutate(IMPORTER.GROUP = stringr::str_trim(IMPORTER.GROUP)) %>%
-  mergeBeefIMPORTER.GROUP(0.95, "beef") %>%
+  mutate(EXPORTER.GROUP = stringr::str_trim(EXPORTER.GROUP)) %>%
+  #mergeBeefIMPORTER.GROUP(0.95, "beef") %>%
   mapCOUNTRY() %>%
   mapMUNICIPALITY() %>%
   distributeUnknownValue() %>%
   distributeAggregated() %>%
-  dplyr::select(YEAR, code, IMPORTER, IMPORTER.GROUP, TRASE_GEOCODE, COUNTRY, Value)
+  dplyr::select(YEAR, code, EXPORTER, EXPORTER.GROUP, TRASE_GEOCODE, COUNTRY, Value)
 
 load(getFile("2020-07-17-BRA_BEEF_SEIPCS.rdata"))
   
@@ -51,14 +51,15 @@ internal <- res %>%
   dplyr::mutate(Value = Internal) %>%
   dplyr::select(-CW_PRODUCTION_TONS_5_YR, -GEOCODE, -Internal, -PRODUCTION_KTONS_YR) %>%
   dplyr::mutate(COUNTRY = "Brazil") %>%
-  dplyr::mutate(IMPORTER = "DOMESTIC_CONSUMPTION") %>%
-  dplyr::mutate(IMPORTER.GROUP = "DOMESTIC_CONSUMPTION") %>%
+  dplyr::mutate(EXPORTER = "DOMESTIC_CONSUMPTION") %>%
+  dplyr::mutate(EXPORTER.GROUP = "DOMESTIC_CONSUMPTION") %>%
   dplyr::relocate(names(csv))
 
 assertthat::assert_that(all.equal(names(csv), names(internal)))
 
 csv <- rbind(csv, internal)
 
+### PAROU AQUI
 shp <- getMunicipalities()
 
 checkMunicipalities(csv, shp)
@@ -75,15 +76,16 @@ eu <- read.csv(euFile)
 gms_eu <- gms %>%
   dplyr::mutate(country = ifelse(country %in% !!eu$country, "EU", country)) %>%
   dplyr::filter(country == "EU") %>%
-  dplyr::group_by(ID, IMPORTER.GROUP, country, year) %>%
+  dplyr::group_by(ID, EXPORTER.GROUP, country, year) %>%
   dplyr::summarise(value = sum(value), .groups = "drop") 
 
 gms <- rbind(gms, gms_eu) %>%
-  dplyr::arrange(ID, IMPORTER.GROUP, year)
+  dplyr::arrange(ID, EXPORTER.GROUP, year)
 
-writeGmsByPairs(gms, "beef")
+writeGmsByPairs(gms, "beef-exporter")
 
-csv$IMPORTER.GROUP %>% 
+csv$EXPORTER.GROUP %>% 
   unique() %>%
   sort() %>% 
-  write.table(getFile(paste0("result/trase-importer-beef.txt")), quote = FALSE, row.names = FALSE, col.names = FALSE)
+  write.table(getFile(paste0("result/trase-exporter-beef.txt")), quote = FALSE, row.names = FALSE, col.names = FALSE)
+

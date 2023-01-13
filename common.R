@@ -495,7 +495,7 @@ buildGmsByPairs <- function(csv){
     cat(paste("Processing year", year, "\n"))
     csv_year <- csv %>%
       dplyr::filter(YEAR == !!year) %>%
-      dplyr::select(YEAR, IMPORTER.GROUP, COUNTRY, TRASE_GEOCODE, Value, code)
+      dplyr::select(YEAR, EXPORTER.GROUP, COUNTRY, TRASE_GEOCODE, Value, code)
     
     countries <- csv_year$COUNTRY %>% unique() %>% sort()
     
@@ -510,11 +510,11 @@ buildGmsByPairs <- function(csv){
       assertthat::assert_that(all(csv_object$TRASE_GEOCODE == paste0("BR-", csv_muni$code_muni))) # check if everything is ok
       
       csv_muni <- csv_muni %>%
-        dplyr::select(Value, code_muni, IMPORTER.GROUP)
+        dplyr::select(Value, code_muni, EXPORTER.GROUP)
       
       simu <- dplyr::inner_join(muniToSimU, csv_muni, "code_muni") %>%
         dplyr::mutate(value = area * Value) %>%
-        dplyr::group_by(ID, IMPORTER.GROUP) %>%
+        dplyr::group_by(ID, EXPORTER.GROUP) %>%
         dplyr::summarise(value = sum(value), .groups = "drop") %>%
         dplyr::mutate(country = !!country) %>%
         dplyr::mutate(year = !!year)
@@ -525,7 +525,7 @@ buildGmsByPairs <- function(csv){
     }
     
     total <- result_simu %>%
-      dplyr::group_by(ID, IMPORTER.GROUP) %>%
+      dplyr::group_by(ID, EXPORTER.GROUP) %>%
       dplyr::summarise(value = sum(value), .groups = "drop") %>%
       dplyr::mutate(country = "TOTALCOUNTRY") %>%
       dplyr::mutate(year = !!year)
@@ -541,7 +541,7 @@ writeGmsByPairs <- function(result, name){
     dplyr::filter(value > 0) %>%
     dplyr::arrange(ID)
   
-  res <- paste0("Brazil.", result$ID, ".", result$IMPORTER.GROUP, ".", result$country, ".", result$year, "\t", result$value) %>%
+  res <- paste0("Brazil.", result$ID, ".\"", result$EXPORTER.GROUP, "\".\"", result$country, "\".", result$year, "\t", result$value) %>%
     c("/", ";") %>%
     data.frame()
 
