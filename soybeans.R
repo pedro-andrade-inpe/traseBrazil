@@ -35,16 +35,27 @@ after <- csv %>% dplyr::group_by(YEAR) %>%
 
 comparison <- cbind(before, after) %>%
   .[,-3] %>%
-  dplyr::mutate(Reduction = After / Before)
+  dplyr::mutate(Reduction = Before - After, Perc = After / Before) %>%
+  round(2)
 
-#comparison
-#YEAR    Before     After Reduction
-#1 2015  97464.94  91130.42 0.9350073
-#2 2016  96394.82  89304.65 0.9264465
-#3 2017 114732.10 106381.26 0.9272144
-#4 2018 117912.45  99841.45 0.8467422
-#5 2019 114316.83  98050.36 0.8577071
-#6 2020 121797.71 101259.71 0.8313762
+#YEAR    Before     After Reduction Perc
+#1 2015  97464.94  91130.42   6334.51 0.94
+#2 2016  96394.82  89304.65   7090.17 0.93
+#3 2017 114732.10 106381.26   8350.84 0.93
+#4 2018 117912.45  99841.45  18071.00 0.85
+#5 2019 114316.83  98050.36  16266.47 0.86
+#6 2020 121797.71 101259.71  20538.00 0.83
+
+
+csv %>%
+  dplyr::filter(EXPORTER.GROUP == "DOMESTIC CONSUMPTION") %>%
+  dplyr::group_by(YEAR) %>%
+  dplyr::summarise(Value = sum(Value))
+
+csv %>%
+  dplyr::filter(EXPORTER.GROUP != "DOMESTIC CONSUMPTION") %>%
+  dplyr::group_by(YEAR) %>%
+  dplyr::summarise(Value = sum(Value))
 
 shp <- getMunicipalities()
 
