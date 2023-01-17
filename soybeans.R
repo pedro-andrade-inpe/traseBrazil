@@ -5,7 +5,6 @@ source("common.R")
 cat("Reading CSV files\n")
 #######################################################
 
-
 alldata <- c()
 
 for(year in 2015:2020){
@@ -29,8 +28,7 @@ csv <- csv %>%
   dplyr::filter(MUNICIPALITY != "UNKNOWN") %>%
   mapCOUNTRY() %>%
   mapMUNICIPALITY() %>%
-  #distributeUnknownValue() %>%
-  dplyr::select(YEAR, code, EXPORTER, EXPORTER.GROUP, TRASE_GEOCODE, COUNTRY, Value)
+  dplyr::select(YEAR, EXPORTER, code, EXPORTER.GROUP, TRASE_GEOCODE, COUNTRY, Value)
 
 after <- csv %>% dplyr::group_by(YEAR) %>%
   summarize(After = sum(Value))
