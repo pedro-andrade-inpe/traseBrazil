@@ -13,6 +13,13 @@ getFile <- function(file) paste0(DATA_DIR, file)
 
 cleanSpecialCharacters <- function(csv){
   csv$COUNTRY = sub("\\.", "_", csv$COUNTRY)
+
+  csv$EXPORTER.GROUP = sub("\\.", "_", csv$EXPORTER.GROUP)
+  csv$EXPORTER.GROUP = sub("\\&", "_", csv$EXPORTER.GROUP)
+  csv$EXPORTER.GROUP = sub(" ", "_", csv$EXPORTER.GROUP)
+  csv$EXPORTER.GROUP = sub(",", "_", csv$EXPORTER.GROUP)
+  csv$EXPORTER.GROUP = sub("\\(", "_", csv$EXPORTER.GROUP)
+  csv$EXPORTER.GROUP = sub("\\)", "_", csv$EXPORTER.GROUP)
   
   return(csv)
 }
