@@ -49,6 +49,9 @@ normalizeArea <- function(relationsTable, by){
 
 require(colrow)
 dataDir <- "c:/Users/pedro/Dropbox/colrow/"
+
+countries <- colrow::getCountries(dataDir)
+
 country <- "Brazil"
 mySimU <- colrow::getSimU(country, dataDir)
 

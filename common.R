@@ -19,6 +19,8 @@ cleanSpecialCharacters <- function(csv){
   csv$IMPORTER.GROUP = gsub("\\(", "_", csv$IMPORTER.GROUP)
   csv$IMPORTER.GROUP = gsub("\\)", "_", csv$IMPORTER.GROUP)
 
+  csv$COUNTRY = sub("\\.", "_", csv$COUNTRY)
+  
   return(csv)
 }
 
@@ -383,7 +385,9 @@ mapCOUNTRY <- function(csv){
   csv$COUNTRY = sub("UnitedArabEmirates", "UntdArabEm", csv$COUNTRY)
   csv$COUNTRY = sub("UnitedKingdom", "UK", csv$COUNTRY)
   csv$COUNTRY = sub("UnitedStates", "USA", csv$COUNTRY)
+  csv$COUNTRY = sub("USAVirginIslands", "USA", csv$COUNTRY)
   csv$COUNTRY = sub("Vietnam", "VietNam", csv$COUNTRY)
+  csv$COUNTRY = sub("VirginIslands\\(Uk\\)", "UK", csv$COUNTRY)
   csv$COUNTRY = sub("OccupiedPalestinianTerritory", "Palestin", csv$COUNTRY)
 
   csv <- cleanSpecialCharacters(csv)
@@ -437,16 +441,7 @@ mapMUNICIPALITY = function(csv){
   csv$code = sub("brasopolis-mg", "brazopolis-mg", csv$code)
   csv$code = sub("santa isabel do para-pa", "santa izabel do para-pa", csv$code)
   csv$code = sub("eldorado dos carajas-pa", "eldorado do carajas-pa", csv$code)
-  
-  # all the data with unknown municipality or aggregated (that have a state)
-  # will be set as unknown
-  # these data must be removed by functions distributeUnknownValue() and distributeAggregated()
-  csv$code = str_replace(csv$code, "aggregated .*", "unknown-us")
-  csv$code = str_replace(csv$code, "unknown municipality .*", "unknown-us")
 
-  # do not do this to guarantee that these values will be removed
-  # csv <- csv %>% dplyr::filter(code != "unknown-us")
-  
   return(csv)
 }
 
