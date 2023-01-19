@@ -82,6 +82,14 @@ gms <- rbind(gms, gms_eu) %>%
 writeGmsByPairs(gms, "soybeans-exporter")
 
 csv$EXPORTER.GROUP %>% 
+  paste0("\"", ., "\"") %>%
   unique() %>%
   sort() %>% 
   write.table(getFile(paste0("result/trase-exporter-soy.txt")), quote = FALSE, row.names = FALSE, col.names = FALSE)
+
+csv$COUNTRY %>% 
+  paste0("\"", ., "\"") %>%
+  unique() %>%
+  sort() %>% 
+  write.table(getFile(paste0("result/trase-country-soy.txt")), quote = FALSE, row.names = FALSE, col.names = FALSE)
+
