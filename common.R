@@ -11,19 +11,6 @@ DATA_DIR <- "C:\\Users\\pedro\\Dropbox\\pesquisa\\2020\\rplus\\trase\\"
 
 getFile <- function(file) paste0(DATA_DIR, file)
 
-cleanSpecialCharacters <- function(csv){
-  csv$COUNTRY = sub("\\.", "_", csv$COUNTRY)
-
-  csv$EXPORTER.GROUP = sub("\\.", "_", csv$EXPORTER.GROUP)
-  csv$EXPORTER.GROUP = sub("\\&", "_", csv$EXPORTER.GROUP)
-  csv$EXPORTER.GROUP = sub(" ", "_", csv$EXPORTER.GROUP)
-  csv$EXPORTER.GROUP = sub(",", "_", csv$EXPORTER.GROUP)
-  csv$EXPORTER.GROUP = sub("\\(", "_", csv$EXPORTER.GROUP)
-  csv$EXPORTER.GROUP = sub("\\)", "_", csv$EXPORTER.GROUP)
-  
-  return(csv)
-}
-
 # distribute AGGREGATED values proportionally within the respective states
 distributeAggregated <- function(csv){
   #######################################################
@@ -120,102 +107,10 @@ mapCOUNTRY <- function(csv){
   
   csv$COUNTRY = str_to_title(csv$COUNTRY)
   csv$COUNTRY = gsub(" ", "", csv$COUNTRY)
-  csv$COUNTRY = sub("BosniaAndHerzegovina", "BosniaHerzg", csv$COUNTRY)
-  csv$COUNTRY = sub("Brunei", "BruneiDarsm", csv$COUNTRY)
   csv$COUNTRY = sub("China\\(HongKong\\)", "China", csv$COUNTRY)
   csv$COUNTRY = sub("China\\(Mainland\\)", "China", csv$COUNTRY)
-  csv$COUNTRY = sub("CongoDemocraticRepublicOfThe", "CongoDemR", csv$COUNTRY)
-  csv$COUNTRY = sub("Congo$", "CongoRep", csv$COUNTRY)
-  csv$COUNTRY = sub("CoteD'ivoire", "CotedIvoire", csv$COUNTRY)
-  csv$COUNTRY = sub("DominicanRepublic", "DominicanRp", csv$COUNTRY)
-  csv$COUNTRY = sub("EquatorialGuinea", "EqGuinea", csv$COUNTRY)
-  csv$COUNTRY = sub("FalklandIslands\\(Malvinas\\)", "FalklandIs", csv$COUNTRY)
-  csv$COUNTRY = sub("FrenchGuyana", "FrGuiana", csv$COUNTRY)
-  csv$COUNTRY = sub("FrenchPolynesia", "FrPolynesia", csv$COUNTRY)
-  csv$COUNTRY = sub("Moldova", "MoldovaRep", csv$COUNTRY)
-  csv$COUNTRY = sub("Serbia", "Serbia-Monte", csv$COUNTRY)
-  csv$COUNTRY = sub("Montenegro", "Serbia-Monte", csv$COUNTRY)
-  csv$COUNTRY = sub("NorthKorea", "KoreaDPRp", csv$COUNTRY)
-  csv$COUNTRY = sub("PapuaNewGuinea", "PapuaNGuin", csv$COUNTRY)
-  csv$COUNTRY = sub("RussianFederation", "RussianFed", csv$COUNTRY)
-  csv$COUNTRY = sub("SouthKorea", "KoreaRep", csv$COUNTRY)
-  csv$COUNTRY = sub("TrinidadAndTobago", "TrinidadTob", csv$COUNTRY)
-  csv$COUNTRY = sub("UnitedArabEmirates", "UntdArabEm", csv$COUNTRY)
-  csv$COUNTRY = sub("UnitedKingdom", "UK", csv$COUNTRY)
-  csv$COUNTRY = sub("UnitedStates", "USA", csv$COUNTRY)
-  csv$COUNTRY = sub("USAVirginIslands", "USA", csv$COUNTRY)
-  csv$COUNTRY = sub("Vietnam", "VietNam", csv$COUNTRY)
-  csv$COUNTRY = sub("VirginIslands\\(Uk\\)", "UK", csv$COUNTRY)
-  csv$COUNTRY = sub("OccupiedPalestinianTerritory", "Palestin", csv$COUNTRY)
 
-  csv <- cleanSpecialCharacters(csv)
-  
   return(csv)
-}
-
-getStates <- function(){
-  states <- list(
-    ACRE = "AC", ALAGOAS = "AL", AMAPA = "AP", AMAZONAS = "AM", BAHIA = "BA", CEARA = "CE",
-    `DISTRITO FEDERAL` = "DF",  `ESPIRITO SANTO` = "ES", GOIAS = "GO", MARANHAO = "MA",
-    `MATO GROSSO` = "MT", `MATO GROSSO DO SUL` = "MS", `MINAS GERAIS` = "MG", PARA = "PA",
-    PARAIBA = "PB", PARANA = "PR", PERNAMBUCO = "PE", PIAUI = "PI", `RIO DE JANEIRO` = "RJ",
-    `RIO GRANDE DO NORTE` = "RN", `RIO GRANDE DO SUL` = "RS", 
-    RONDONIA = "RO", RORAIMA = "RR",  `SAO PAULO` = "SP", `SANTA CATARINA` = "SC", SERGIPE = "SE",
-    TOCANTINS = "TO", `UNKNOWN STATE` = "US"
-  )
-  
-  return(states)
-}
-
-mapMUNICIPALITY = function(csv){
-  #######################################################
-  cat("Renaming municipalities\n")
-  #######################################################
-  
-  mystates <- getStates()
-  
-  csv$Sigla = unlist(mystates[csv$STATE])
-  
-  # fix municipalities
-  csv$code = tolower(paste0(csv$MUNICIPALITY, "-", csv$Sigla))
-  csv$code = sub("'", "", csv$code)
-  csv$code = sub("brasopolis-mg", "brazopolis-mg", csv$code)
-  csv$code = sub("coronel vivid", "coronel vivida", csv$code)
-  csv$code = sub("couto de magalhaes-to", "couto magalhaes-to", csv$code)
-  csv$code = sub("eldorado do s", "eldorado do sul", csv$code)
-  csv$code = sub("eldorado dos carajas-pa", "eldorado do carajas-pa", csv$code)
-  csv$code = sub("faxinal dos g", "faxinal dos guedes", csv$code)
-  csv$code = sub("florinia", "florinea", csv$code)
-  csv$code = sub("limeira do oe", "limeira do oeste", csv$code)
-  csv$code = sub("mogi-mirim", "mogi mirim", csv$code)
-  csv$code = sub("muquem de sao francisco", "muquem do sao francisco", csv$code)
-  csv$code = sub("passa-vinte-mg", "passa vinte-mg", csv$code)
-  csv$code = sub("patos de mina", "patos de minas", csv$code)
-  csv$code = sub("porto naciona", "porto nacional", csv$code)
-  csv$code = sub("poxoreo", "poxoreu", csv$code)
-  csv$code = sub("presidente castelo branco-sc", "presidente castello branco-sc", csv$code)
-  csv$code = sub("santa isabel do para-pa", "santa izabel do para-pa", csv$code)
-  csv$code = sub("sao luis do paraitinga", "sao luiz do paraitinga", csv$code)
-  csv$code = sub("sao miguel d oeste", "sao miguel do oeste", csv$code)
-  csv$code = sub("sao valerio da natividade-to", "sao valerio-to", csv$code)
-  csv$code = sub("vila bela santissima", "vila bela da santissima", csv$code)
-  
-  return(csv)
-}
-
-getMunicipalities <- function(){
-  #######################################################
-  cat("Loading municipalities shapefile\n")
-  #######################################################
-  
-  shp <- read_municipality(year = 2017) %>%
-    as.data.frame() %>%
-    dplyr::mutate(code = tolower(paste0(name_muni, "-", abbrev_state))) %>%
-    dplyr::mutate(code = stringi::stri_trans_general(code, id="Latin-ASCII")) %>%
-    dplyr::mutate(code = sub("'", "", code)) %>%
-    dplyr::select(code_muni, code)
-  
-  return(shp)
 }
 
 # check whether all municipalities match their names and geocode
@@ -226,40 +121,34 @@ checkMunicipalities <- function(csv, shp){
   #######################################################
   
   err = list()
+
   for(i in 1:dim(csv)[1]){
-    munic <- csv$code[i]
+    munic <- csv$MUNICIPALITY[i]
     
-    pos <- which(shp$code == munic)
+    pos <- which(shp$code_muni == as.numeric(munic))
     
     if(length(pos) != 1) {
       cat(paste0("Geocode does not match: ", munic, " at position ", i, "\n"))
       err[[munic]] = TRUE
     }
-    
-    if(munic != shp$code[pos]){
-      cat(paste0("Munic names do not match: ", munic, " and ", shp$code[pos], "\n"))
-      err[[munic]] = TRUE
-      
-    }
-    
-    
   }
 
   if(length(err) > 0) print(sort(names(err))) # municipalities with some problem to match Trase and IBGE
   assertthat::are_equal(length(err), 0)
 }
 
-buildGmsByPairs <- function(csv){
+buildGmsByPairs <- function(csv, shp){
   muniToSimU <- read.csv(getFile("muni-to-simu.csv")) # read from file exported by createRelations.R
-  years <- csv$YEAR %>% unique() %>% sort()
+  years <- csv$year %>% unique() %>% sort()
   result <- data.frame()
   
+  shp <- shp %>% dplyr::mutate(MUNICIPALITY = paste0(code_muni))
+
   for(year in years){
     cat(paste("Processing year", year, "\n"))
     csv_year <- csv %>%
-      dplyr::filter(YEAR == !!year) %>%
-      dplyr::select(YEAR, EXPORTER.GROUP, COUNTRY, TRASE_GEOCODE, Value, code)
-    
+      dplyr::filter(year == !!year)
+
     countries <- csv_year$COUNTRY %>% unique() %>% sort()
     
     result_simu <- data.frame()
@@ -268,16 +157,14 @@ buildGmsByPairs <- function(csv){
       csv_object <- csv_year %>%
         dplyr::filter(COUNTRY == country)
       
-      csv_muni <- dplyr::left_join(csv_object, shp, "code") 
-      
-      assertthat::assert_that(all(csv_object$TRASE_GEOCODE == paste0("BR-", csv_muni$code_muni))) # check if everything is ok
+      csv_muni <- dplyr::left_join(csv_object, shp, "MUNICIPALITY") 
       
       csv_muni <- csv_muni %>%
-        dplyr::select(Value, code_muni, EXPORTER.GROUP)
+        dplyr::select(Value, code_muni, EXPORTER_GROUP)
       
       simu <- dplyr::inner_join(muniToSimU, csv_muni, "code_muni") %>%
         dplyr::mutate(value = area * Value) %>%
-        dplyr::group_by(ID, EXPORTER.GROUP) %>%
+        dplyr::group_by(ID, EXPORTER_GROUP) %>%
         dplyr::summarise(value = sum(value), .groups = "drop") %>%
         dplyr::mutate(country = !!country) %>%
         dplyr::mutate(year = !!year)
@@ -288,7 +175,7 @@ buildGmsByPairs <- function(csv){
     }
     
     total <- result_simu %>%
-      dplyr::group_by(ID, EXPORTER.GROUP) %>%
+      dplyr::group_by(ID, EXPORTER_GROUP) %>%
       dplyr::summarise(value = sum(value), .groups = "drop") %>%
       dplyr::mutate(country = "TOTALCOUNTRY") %>%
       dplyr::mutate(year = !!year)
@@ -304,7 +191,7 @@ writeGmsByPairs <- function(result, name){
     dplyr::filter(value > 0) %>%
     dplyr::arrange(ID)
   
-  res <- paste0("Brazil.", result$ID, ".\"", result$EXPORTER.GROUP, "\".\"", result$country, "\".", result$year, "\t", result$value) %>%
+  res <- paste0("Brazil.", result$ID, ".\"", result$EXPORTER_GROUP, "\".\"", result$country, "\".", result$year, "\t", result$value) %>%
     c("/", ";") %>%
     data.frame()
 
