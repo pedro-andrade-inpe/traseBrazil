@@ -28,9 +28,18 @@ checkMunicipalities(csv, shp)
 cat("Joining and exporting data\n")
 #######################################################
 
+
+csv$EXPORTER_GROUP %>% unique() %>% sort() %>% .[1000:1200]
+
 csv2 <- csv %>%
+  mutate(
+    ECONOMIC_BLOCK = recode(
+      ECONOMIC_BLOCK,
+      "CHINA (HONG KONG)" = "CHINA",
+      "CHINA (MAINLAND)" = "CHINA"
+    )) %>%
   mutate(EXPORTER_GROUP = case_when(
-    EXPORTER_GROUP %in% c("ADM", "AMAGGI", "BUNGE", "CARGILL", "COFCO", "LOUIS DREYFUS") ~ EXPORTER_GROUP,
+    EXPORTER_GROUP %in% c("ADM", "AMAGGI", "BUNGE", "CARGILL", "COFCO", "LOUIS DREYFUS", "VITERRA BV") ~ EXPORTER_GROUP,
     TRUE ~ "OTHER"
   )) %>%
   mutate(ECONOMIC_BLOCK = case_when(
