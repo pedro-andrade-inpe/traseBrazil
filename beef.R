@@ -1,91 +1,180 @@
-
-source("common.R")
+DATA_DIR <- "C:\\Users\\pedro\\Dropbox\\pesquisa\\2020\\rplus\\trase\\"
+getFile <- function(file) paste0(DATA_DIR, file)
 
 #######################################################
-cat("Reading CSV files\n")
+cat("Reading CSV file\n")
 #######################################################
 
-beefFile1 <- getFile("BRAZIL_BEEF_2.0.1_pc\\BRAZIL_BEEF_2.0.1_pc.2015.csv")
-beefFile2 <- getFile("BRAZIL_BEEF_2.0.1_pc\\BRAZIL_BEEF_2.0.1_pc.2016.csv")
-beefFile3 <- getFile("BRAZIL_BEEF_2.0.1_pc\\BRAZIL_BEEF_2.0.1_pc.2017.csv")
+beefFile <- read.csv("C:/Users/pedro/Dropbox/pesquisa/2026/aline/trase/brazil_beef_v2_2_2.csv")
 
-csv1 <- read.csv(beefFile1, as.is = TRUE)
-csv2 <- read.csv(beefFile2, as.is = TRUE)
-csv3 <- read.csv(beefFile3, as.is = TRUE)
+csv <- beefFile %>%
+  mutate(Value = volume) %>%
+  mutate(EXPORTER_GROUP = stringr::str_trim(exporter_group)) %>%
+  mutate(
+    EXPORTER_GROUP = case_when(
+      EXPORTER_GROUP %in% c("JBS", "MARFRIG", "MINERVA") ~ EXPORTER_GROUP,
+      TRUE ~ "OTHER"
+    )) %>%
+  mutate(MUNICIPALITY = municipality_of_production_trase_id %>% substring(4)) %>%
+  dplyr::filter(MUNICIPALITY != "XXXXXXX") %>%
+  mutate(ECONOMIC_BLOCK = economic_bloc) %>%
+  mutate(
+    ECONOMIC_BLOCK = recode(
+      ECONOMIC_BLOCK,
+      "CHINA (HONG KONG)" = "CHINA",
+      "CHINA (MAINLAND)" = "CHINA"
+    )) %>%
+  mutate(
+    ECONOMIC_BLOCK = case_when(
+      ECONOMIC_BLOCK %in% c("BRAZIL", "EUROPEAN UNION", "CHINA") ~ ECONOMIC_BLOCK,
+      TRUE ~ "OTHER"
+    )) %>%
+  mutate(YEAR = year) %>%
+  dplyr::select(YEAR, ECONOMIC_BLOCK, EXPORTER_GROUP, MUNICIPALITY, Value)
 
-csv <- rbind(csv1, csv2, csv3) %>%
-  mutate(Value = BEEF_EQUIVALENT_TONNES / CONVERSION) %>%
-  mutate(EXPORTER.GROUP = stringr::str_trim(EXPORTER.GROUP)) %>%
-  #mergeBeefIMPORTER.GROUP(0.95, "beef") %>%
-  mapCOUNTRY() %>%
-  mapMUNICIPALITY() %>%
-  distributeUnknownValue() %>%
-  distributeAggregated() %>%
-  dplyr::select(YEAR, code, EXPORTER, EXPORTER.GROUP, TRASE_GEOCODE, COUNTRY, Value)
 
-load(getFile("2020-07-17-BRA_BEEF_SEIPCS.rdata"))
+dados <- read_parquet("c:/users/pedro/downloads/cattle_production_4_annual_and_5YEAR_2025-10-02.parquet") %>%
+  mutate(MUNICIPALITY = trase_id %>% substring(4)) %>%
+  mutate(ECONOMIC_BLOCK = "BRAZIL") %>%
+  mutate(EXPORTER_GROUP = "INTERNAL_CONSUMPTION") %>%
+  mutate(Value = CW_PRODUCTION_TONS_5_YR / 5) %>%
+  dplyr::select(YEAR, ECONOMIC_BLOCK, EXPORTER_GROUP, MUNICIPALITY, Value) %>%
+  dplyr::filter(YEAR %in% 2011:2023)
   
-prod <- prod %>%
-  dplyr::mutate(TRASE_GEOCODE = paste0("BR-", GEOCODE)) %>%
-  dplyr::mutate(PRODUCTION_KTONS_YR = CW_PRODUCTION_TONS_5_YR / 1000 / 5)
 
-res <- csv %>%
-  dplyr::group_by(YEAR, TRASE_GEOCODE, code) %>%
-  dplyr::summarise(Value = sum(Value), .groups = "drop") %>%
-  dplyr::full_join(prod, by = c("TRASE_GEOCODE", "YEAR")) %>%
-  dplyr::mutate(Internal = PRODUCTION_KTONS_YR - Value)
+head(csv)
+head(dados)
 
-difference <- res %>% dplyr::filter(Internal < 0) %>%
-  dplyr::group_by(YEAR) %>%
-  summarize(Value = sum(Internal))
-#<dbl>  <dbl>
-# 1  2015 -105. 
-# 2  2016 -113. 
-# 3  2017  -99.6
+export_mun <- csv %>%
+  group_by(YEAR, MUNICIPALITY) %>%
+  summarise(
+    exportacao = sum(Value, na.rm = TRUE),
+    .groups = "drop"
+  )
 
-sum(difference$Value)/ sum(prod$PRODUCTION_KTONS_YR) * 100
-# -0.9252067
+consumo_interno <- dados %>%
+  rename(producao_original = Value) %>%
+  left_join(export_mun, by = c("YEAR", "MUNICIPALITY")) %>%
+  mutate(
+    exportacao = coalesce(exportacao, 0),
+    aumento_producao = pmax(exportacao - producao_original, 0),
+    producao_ajustada = pmax(producao_original, exportacao),
+    consumo_interno = producao_ajustada - exportacao
+  )
 
-internal <- res %>%
-  dplyr::filter(Internal > 0) %>%
-  dplyr::mutate(Value = Internal) %>%
-  dplyr::select(-CW_PRODUCTION_TONS_5_YR, -GEOCODE, -Internal, -PRODUCTION_KTONS_YR) %>%
-  dplyr::mutate(COUNTRY = "Brazil") %>%
-  dplyr::mutate(EXPORTER = "DOMESTIC_CONSUMPTION") %>%
-  dplyr::mutate(EXPORTER.GROUP = "DOMESTIC_CONSUMPTION") %>%
-  dplyr::relocate(names(csv))
+result <- consumo_interno %>%
+  dplyr::mutate(Value = consumo_interno) %>%
+  dplyr::select(YEAR, ECONOMIC_BLOCK, EXPORTER_GROUP, MUNICIPALITY, Value)
 
-assertthat::assert_that(all.equal(names(csv), names(internal)))
+muniToSimU <- read.csv(getFile("muni-to-simu.csv")) %>% # read from file exported by createRelations.R
+  dplyr::mutate(MUNICIPALITY = paste0(code_muni)) %>%
+  dplyr::select(ID, MUNICIPALITY, area)
 
-csv <- rbind(csv, internal)
+csv2 <- rbind(csv, result) %>%
+  dplyr::filter(YEAR != 2018)
 
-### PAROU AQUI
-shp <- getMunicipalities()
-
-checkMunicipalities(csv, shp)
 
 #######################################################
-cat("Joining and exporting data\n")
+cat("Processing economic block\n")
 #######################################################
+csv_economic_block <- csv2 %>%
+  dplyr::group_by(ECONOMIC_BLOCK, YEAR, MUNICIPALITY) %>%
+  dplyr::summarise(Value = sum(Value), .groups = "drop")
 
-gms <- buildGmsByPairs(csv)
+result <- csv_economic_block %>%
+  left_join(
+    muniToSimU,
+    by = "MUNICIPALITY",
+    relationship = "many-to-many"
+  ) %>%
+  mutate(value_id = Value * area) %>%
+  group_by(ECONOMIC_BLOCK, YEAR, ID) %>%
+  summarise(value = sum(value_id, na.rm = TRUE), .groups = "drop") %>%
+  dplyr::arrange(ID)
 
-euFile <- getFile("eu-countries.csv")
-eu <- read.csv(euFile)
+res <- paste0("Brazil.", result$ID, ".\"", result$ECONOMIC_BLOCK, "\".", result$YEAR, "\t", result$value) %>%
+  c("/", ";") %>%
+  data.frame()
 
-gms_eu <- gms %>%
-  dplyr::mutate(country = ifelse(country %in% !!eu$country, "EU", country)) %>%
-  dplyr::filter(country == "EU") %>%
-  dplyr::group_by(ID, EXPORTER.GROUP, country, year) %>%
-  dplyr::summarise(value = sum(value), .groups = "drop") 
+colnames(res) <- paste0("PARAMETER ",
+                        "BEEF_TRASE\n(COUNTRY,SimUID,BEEF_TRASE_DESTINATION,ALLYEAR) ",
+                        " sourcing in ton per SimU\n/")
 
-gms <- rbind(gms, gms_eu) %>%
-  dplyr::arrange(ID, EXPORTER.GROUP, year)
+write.table(res, "trase-beef-economic-block.gms", row.names = FALSE, quote = FALSE)
 
-writeGmsByPairs(gms, "beef-exporter")
+#######################################################
+cat("Processing exporter group\n")
+#######################################################
+csv_exporter_group <- csv2 %>%
+  dplyr::filter(ECONOMIC_BLOCK != "BRAZIL") %>%
+  dplyr::group_by(EXPORTER_GROUP, YEAR, MUNICIPALITY) %>%
+  dplyr::summarise(Value = sum(Value), .groups = "drop") 
 
-csv$EXPORTER.GROUP %>% 
+result <- csv_exporter_group %>%
+  left_join(
+    muniToSimU,
+    by = "MUNICIPALITY",
+    relationship = "many-to-many"
+  ) %>%
+  mutate(value_id = Value * area) %>%
+  group_by(EXPORTER_GROUP, YEAR, ID) %>%
+  summarise(value = sum(value_id, na.rm = TRUE), .groups = "drop") %>%
+  dplyr::arrange(ID)
+
+res <- paste0("Brazil.", result$ID, ".\"", result$EXPORTER_GROUP, "\".", result$YEAR, "\t", result$value) %>%
+  c("/", ";") %>%
+  data.frame()
+
+colnames(res) <- paste0("PARAMETER ",
+                        "BEEF_TRASE\n(COUNTRY,SimUID,BEEF_TRASE_TRADER,ALLYEAR) ",
+                        " sourcing in ton per SimU\n/")
+
+write.table(res, "trase-beef-exporter-group.gms", row.names = FALSE, quote = FALSE)
+
+#######################################################
+cat("Processing exporter group and economic block together\n")
+#######################################################
+csv_economic_block_exporter_group <- csv2 %>%
+  dplyr::filter(ECONOMIC_BLOCK != "BRAZIL") %>%
+  dplyr::group_by(ECONOMIC_BLOCK, EXPORTER_GROUP, YEAR, MUNICIPALITY) %>%
+  dplyr::summarise(Value = sum(Value), .groups = "drop")
+
+result <- csv_economic_block_exporter_group %>%
+  left_join(
+    muniToSimU,
+    by = "MUNICIPALITY",
+    relationship = "many-to-many"
+  ) %>%
+  mutate(value_id = Value * area) %>%
+  group_by(ECONOMIC_BLOCK, EXPORTER_GROUP, YEAR, ID) %>%
+  summarise(value = sum(value_id, na.rm = TRUE), .groups = "drop") %>%
+  dplyr::arrange(ID)
+
+res <- paste0("Brazil.", result$ID, ".\"", result$ECONOMIC_BLOCK, "\".\"", result$EXPORTER_GROUP, "\".", result$YEAR, "\t", result$value) %>%
+  c("/", ";") %>%
+  data.frame()
+
+colnames(res) <- paste0("PARAMETER ",
+                        "BEEF_TRASE\n(COUNTRY,SimUID,BEEF_TRASE_DESTINATION,BEEF_TRASE_TRADER,ALLYEAR) ",
+                        " sourcing in ton per SimU\n/")
+
+write.table(res, "trase-beef-economic-block-exporter-group.gms", row.names = FALSE, quote = FALSE)
+
+
+#######################################################
+cat("Exporting unique values\n")
+#######################################################
+csv2$EXPORTER_GROUP %>% 
+  paste0("\"", ., "\"") %>%
   unique() %>%
   sort() %>% 
-  write.table(getFile(paste0("result/trase-exporter-beef.txt")), quote = FALSE, row.names = FALSE, col.names = FALSE)
+  write.table("trase_beef_trader.txt", quote = FALSE, row.names = FALSE, col.names = FALSE)
+
+csv2$ECONOMIC_BLOCK %>% 
+  paste0("\"", ., "\"") %>%
+  unique() %>%
+  sort() %>% 
+  write.table("trase_beef_destination.txt", quote = FALSE, row.names = FALSE, col.names = FALSE)
+
+
 
