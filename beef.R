@@ -1,6 +1,8 @@
 DATA_DIR <- "C:\\Users\\pedro\\Dropbox\\pesquisa\\2020\\rplus\\trase\\"
 getFile <- function(file) paste0(DATA_DIR, file)
 
+require(dplyr)
+
 #######################################################
 cat("Reading CSV file\n")
 #######################################################
@@ -32,18 +34,13 @@ csv <- beefFile %>%
   mutate(YEAR = year) %>%
   dplyr::select(YEAR, ECONOMIC_BLOCK, EXPORTER_GROUP, MUNICIPALITY, Value)
 
-
-dados <- read_parquet("c:/users/pedro/downloads/cattle_production_4_annual_and_5YEAR_2025-10-02.parquet") %>%
+dados <- arrow::read_parquet("c:/users/pedro/downloads/cattle_production_4_annual_and_5YEAR_2025-10-02.parquet") %>%
   mutate(MUNICIPALITY = trase_id %>% substring(4)) %>%
   mutate(ECONOMIC_BLOCK = "BRAZIL") %>%
   mutate(EXPORTER_GROUP = "INTERNAL_CONSUMPTION") %>%
   mutate(Value = CW_PRODUCTION_TONS_5_YR / 5) %>%
   dplyr::select(YEAR, ECONOMIC_BLOCK, EXPORTER_GROUP, MUNICIPALITY, Value) %>%
   dplyr::filter(YEAR %in% 2011:2023)
-  
-
-head(csv)
-head(dados)
 
 export_mun <- csv %>%
   group_by(YEAR, MUNICIPALITY) %>%
@@ -78,7 +75,7 @@ csv2 <- rbind(csv, result) %>%
 cat("Processing economic block\n")
 #######################################################
 csv_economic_block <- csv2 %>%
-  dplyr::group_by(ECONOMIC_BLOCK, YEAR, MUNICIPALITY) %>%
+  dplyr::group_by(ECONOMIC_BLOCK, EXPORTER_GROUP, YEAR, MUNICIPALITY) %>%
   dplyr::summarise(Value = sum(Value), .groups = "drop")
 
 result <- csv_economic_block %>%
@@ -88,16 +85,16 @@ result <- csv_economic_block %>%
     relationship = "many-to-many"
   ) %>%
   mutate(value_id = Value * area) %>%
-  group_by(ECONOMIC_BLOCK, YEAR, ID) %>%
+  group_by(ECONOMIC_BLOCK, EXPORTER_GROUP, YEAR, ID) %>%
   summarise(value = sum(value_id, na.rm = TRUE), .groups = "drop") %>%
   dplyr::arrange(ID)
 
-res <- paste0("Brazil.", result$ID, ".\"", result$ECONOMIC_BLOCK, "\".", result$YEAR, "\t", result$value) %>%
+res <- paste0("Brazil.", result$ID, ".\"", result$ECONOMIC_BLOCK, "\".", result$EXPORTER_GROUP, "\".", result$YEAR, "\t", result$value) %>%
   c("/", ";") %>%
   data.frame()
 
 colnames(res) <- paste0("PARAMETER ",
-                        "BEEF_TRASE\n(COUNTRY,SimUID,BEEF_TRASE_DESTINATION,ALLYEAR) ",
+                        "BEEF_TRASE\n(COUNTRY,SimUID,BEEF_TRASE_DESTINATION,EXPORTER_GROUP,ALLYEAR) ",
                         " sourcing in ton per SimU\n/")
 
 write.table(res, "trase-beef-economic-block.gms", row.names = FALSE, quote = FALSE)
