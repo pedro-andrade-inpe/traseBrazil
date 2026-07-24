@@ -7,6 +7,17 @@ cat("Reading CSV file\n")
 
 soyFile <- read.csv("C:/Users/pedro/Dropbox/pesquisa/2026/aline/trase/brazil_soy_v2_6_1_composite.csv")
 
+#### adicinoei recente para testar glencore
+
+result <- soyFile %>%
+  dplyr::filter(str_detect(exporter, "GLENCORE"))
+
+sum(result$volume) / sum(soyFile$volume) * 100
+
+result$year %>% unique()
+
+#### adicinoei recente para testar glencore
+
 csv <- soyFile %>%
   mutate(Value = volume) %>%
   mutate(EXPORTER_GROUP = stringr::str_trim(exporter_group)) %>%
@@ -29,7 +40,7 @@ csv2 <- csv %>%
       "CHINA (MAINLAND)" = "CHINA"
     )) %>%
   mutate(EXPORTER_GROUP = case_when(
-    EXPORTER_GROUP %in% c("ADM", "AMAGGI", "BUNGE", "CARGILL", "COFCO", "LOUIS DREYFUS", "VITERRA BV") ~ EXPORTER_GROUP,
+    EXPORTER_GROUP %in% c("ADM", "AMAGGI", "BUNGE", "CARGILL", "COFCO", "LOUIS DREYFUS", "VITERRA BV", "GLENCORE") ~ EXPORTER_GROUP,
     TRUE ~ "OTHER"
   )) %>%
   mutate(ECONOMIC_BLOCK = case_when(
@@ -40,6 +51,13 @@ csv2 <- csv %>%
 muniToSimU <- read.csv(getFile("muni-to-simu.csv")) %>% # read from file exported by createRelations.R
   dplyr::mutate(MUNICIPALITY = paste0(code_muni)) %>%
   dplyr::select(ID, MUNICIPALITY, area)
+
+muniToSimU <- muniToSimU %>%
+  group_by(ID) %>%
+  slice_max(area, n = 1, with_ties = FALSE) %>%
+  ungroup()
+
+muniToSimU$area <- 1
 
 #######################################################
 cat("Processing economic block\n")
@@ -142,3 +160,4 @@ csv2$ECONOMIC_BLOCK %>%
   unique() %>%
   sort() %>% 
   write.table("trase_soy_destionation.txt", quote = FALSE, row.names = FALSE, col.names = FALSE)
+

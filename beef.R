@@ -67,6 +67,13 @@ muniToSimU <- read.csv(getFile("muni-to-simu.csv")) %>% # read from file exporte
   dplyr::mutate(MUNICIPALITY = paste0(code_muni)) %>%
   dplyr::select(ID, MUNICIPALITY, area)
 
+muniToSimU <- muniToSimU %>%
+  group_by(ID) %>%
+  slice_max(area, n = 1, with_ties = FALSE) %>%
+  ungroup()
+
+muniToSimU$area <- 1
+
 csv2 <- rbind(csv, result) %>%
   dplyr::filter(YEAR != 2018)
 
