@@ -136,7 +136,8 @@ labels <- c(
 )
 
 map_soy <-
-  tm_shape(dados) + tm_fill(
+  tm_shape(dados) + 
+  tm_fill(
     fill = "DSoy",
     fill.scale = tm_scale_intervals(
       breaks = cuts,
@@ -144,8 +145,10 @@ map_soy <-
       labels = labels,
       value.na = "white"
     ),
+    fill.legend = tm_legend(
       title = "",
       position = tm_pos_in("left", "bottom")
+    )
   ) +
   tm_shape(biomes) +
   tm_borders(
@@ -172,6 +175,7 @@ map_soy <-
     position = tm_pos_in("left", "bottom")
   )
 
+map_soy
 
 map_beef <-
   tm_shape(dados) +
@@ -212,6 +216,8 @@ map_beef <-
     lwd = c(0.6, 1),
     position = tm_pos_in("left", "bottom")
   )
+
+map_beef
 
 tmap_mode("plot")
 
