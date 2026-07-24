@@ -82,7 +82,7 @@ p_beef <- ggplot(beef, aes(x, y, fill=group)) +
   geom_tile(width=.82, height=.82, colour="white", linewidth=.8) +
   coord_equal() +
   scale_fill_manual(values=cores) +
-  labs(title="Projected deforestation-risk exposure\nattributed to destination markets (%)") +
+  labs(title="Projected deforestation-risk exposure\nattributed to destination markets") +
   theme_void() +
   theme(
     plot.title=element_text(face="bold", hjust=.5),
@@ -117,50 +117,54 @@ dados <- colrow::processFile(
   colrow::attrs(COUNTRY, ID, DRIVER, VALUE)
 )
 
+library(tmap)
 
-theme_map <- theme_void(base_size = 12) +
-  theme(
-    plot.title = element_text(face = "bold", hjust = .5),
-    legend.position = c(.18, .15),
-    legend.direction = "horizontal",
-    legend.title = element_text(size = 10),
-    legend.text = element_text(size = 9)
-  )
+cuts <- c(0,0.0001, 5.92,16.76,37.33,71.11,130.38,211.54,260,309)
 
-fill_scale <- scale_fill_gradientn(
-  colours = c(
-    "#ffffff",
-    "#fee5d9",
-    "#fcbba1",
-    "#fb6a4a",
-    "#de2d26",
-    "#a50f15"
-  ),
-  na.value = "white",
-  name = "Deforestation (ha)",
-  labels = label_number(big.mark = ",")
+cores <- c(
+  "#ffffff",  # 0–0.0001
+  "#fee8e6",  # 0.0001–5.92
+  "#fee0d2",
+  "#fcbba1",
+  "#fc9272",
+  "#fb6a4a",
+  "#ef3b2c",
+  "#cb181d",
+  "#67000d"
 )
 
-sf_use_s2(FALSE)
+map_beef <- tm_shape(dados) +
+  tm_fill(
+    fill = "DBeef",
+    fill.scale = tm_scale_intervals(
+      breaks = cuts,
+      values = cores,
+      value.na = "white"
+    )
+  ) +
+  tm_shape(biomes) +
+  tm_borders(col = "grey40", lwd = 0.6) +
+  tm_shape(matopiba) +
+  tm_borders(col = "#3B5BDB", lwd = 1)
 
-p_beef_map <-
-  ggplot() +
-  geom_sf(data = dados, aes(fill = DBeef), colour = NA) +
-  geom_sf(data = st_union(dados), fill = NA, colour = "grey30", linewidth = .30) +
-#  geom_sf(data = matopiba, fill = NA, colour = "#2E5EFF", linewidth = .55) +
-  fill_scale +
-  coord_sf(expand = FALSE) +
-  labs(title = "Spatial distribution of\nprojected deforestation (2020-2050)") +
-  theme_map
 
-p_soy_map <-
-  ggplot() +
-  geom_sf(data = dados, aes(fill = DSoy), colour = NA) +
-  geom_sf(data = st_union(dados), fill = NA, colour = "grey30", linewidth = .30) +
-#  geom_sf(data = matopiba, fill = NA, colour = "#2E5EFF", linewidth = .55) +
-  fill_scale +
-  coord_sf(expand = FALSE) +
-  theme_map
+map_soy <- tm_shape(dados) +
+  tm_fill(
+    fill = "DSoy",
+    fill.scale = tm_scale_intervals(
+      breaks = cuts,
+      values = cores,
+      value.na = "white"
+    )
+  ) +
+  tm_shape(biomes) +
+  tm_borders(col = "grey40", lwd = 0.6) +
+  tm_shape(matopiba) +
+  tm_borders(col = "#3B5BDB", lwd = 1)
 
-p_beef_map / p_soy_map
+tmap_arrange(
+  map_beef,
+  map_soy,
+  ncol = 1
+)
 
