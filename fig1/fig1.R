@@ -98,6 +98,7 @@ w_soy <- ggplot(soy, aes(x, y, fill=group)) +
     legend.position="right"
   )
 
+
 dataDir <- "c:/Users/pedro/Dropbox/colrow"
 cr <- colrow::getCR("Brazil", dataDir)
 sf::write_sf(cr, "BrazilCR.gpkg")
@@ -143,7 +144,7 @@ map_soy <-
       labels = labels,
       value.na = "white"
     ),
-      title = "Soy",
+      title = "",
       position = tm_pos_in("left", "bottom")
   ) +
   tm_shape(biomes) +
@@ -183,7 +184,7 @@ map_beef <-
       value.na = "white"
     ),
     fill.legend = tm_legend(
-      title = "Beef",
+      title = "",
       position = tm_pos_in("left", "bottom")
     )
   ) +
