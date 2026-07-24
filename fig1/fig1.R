@@ -1,5 +1,4 @@
 
-
 library(ggplot2)
 library(patchwork)
 library(dplyr)
@@ -7,6 +6,8 @@ library(colrow)
 library(sf)
 library(tmap)
 library(scales)
+library(tmap)
+library(ggplotify)
 
 beef <- data.frame(
   Region=factor(c("Brazil","Amazon","Caatinga","Cerrado","Pantanal"),
@@ -33,11 +34,9 @@ theme_fig <- theme_bw(base_size=13) +
         axis.title.x=element_blank(),
         legend.position="none")
 
-
 p_beef <- ggplot(beef, aes(Region, SSP2)) +
   geom_col(width=.55, fill="#b3001b") +
   geom_linerange(aes(ymin=min, ymax=max), linewidth=.9) +
-  geom_errorbar(aes(ymin=min, ymax=max), width=.16, linewidth=.8) +
   scale_y_continuous(limits=c(0,80), expand=c(0,0)) +
   labs(title="Projected deforestation by biome (2020-2050)", y="Mha") +
   theme_fig
@@ -45,13 +44,9 @@ p_beef <- ggplot(beef, aes(Region, SSP2)) +
 p_soy <- ggplot(soy, aes(Region, SSP2)) +
   geom_col(width=.55, fill="#b3001b") +
   geom_linerange(aes(ymin=min, ymax=max), linewidth=.9) +
-  geom_errorbar(aes(ymin=min, ymax=max), width=.16, linewidth=.8) +
   scale_y_continuous(limits=c(0,7), expand=c(0,0)) +
   labs(y="Mha") +
   theme_fig
-
-p_beef / p_soy
-
 
 waffle_data <- function(values, labels){
   n <- round(values)
@@ -78,7 +73,7 @@ beef <- waffle_data(
   labels = c("Brazil","China","EU","RoW")
 )
 
-p_beef <- ggplot(beef, aes(x, y, fill=group)) +
+w_beef <- ggplot(beef, aes(x, y, fill=group)) +
   geom_tile(width=.82, height=.82, colour="white", linewidth=.8) +
   coord_equal() +
   scale_fill_manual(values=cores) +
@@ -94,7 +89,7 @@ soy <- waffle_data(
   labels = c("Brazil","China","EU","RoW")
 )
 
-p_soy <- ggplot(soy, aes(x, y, fill=group)) +
+w_soy <- ggplot(soy, aes(x, y, fill=group)) +
   geom_tile(width=.82, height=.82, colour="white", linewidth=.8) +
   coord_equal() +
   scale_fill_manual(values=cores) +
@@ -103,11 +98,7 @@ p_soy <- ggplot(soy, aes(x, y, fill=group)) +
     legend.position="right"
   )
 
-p_beef / p_soy
-
-
 dataDir <- "c:/Users/pedro/Dropbox/colrow"
-
 cr <- colrow::getCR("Brazil", dataDir)
 sf::write_sf(cr, "BrazilCR.gpkg")
 
@@ -117,13 +108,11 @@ dados <- colrow::processFile(
   colrow::attrs(COUNTRY, ID, DRIVER, VALUE)
 )
 
-library(tmap)
-
 cuts <- c(0,0.0001, 5.92,16.76,37.33,71.11,130.38,211.54,260,309)
 
 cores <- c(
-  "#ffffff",  # 0–0.0001
-  "#fee8e6",  # 0.0001–5.92
+  "#ffffff",
+  "#fee8e6",
   "#fee0d2",
   "#fcbba1",
   "#fc9272",
@@ -133,38 +122,104 @@ cores <- c(
   "#67000d"
 )
 
-map_beef <- tm_shape(dados) +
+labels <- c(
+  "0",
+  "< 5.92",
+  "5.92–16.76",
+  "16.76–37.33",
+  "37.33–71.11",
+  "71.11–130.38",
+  "130.38–211.54",
+  "211.54–260",
+  "260–309"
+)
+
+map_soy <-
+  tm_shape(dados) + tm_fill(
+    fill = "DSoy",
+    fill.scale = tm_scale_intervals(
+      breaks = cuts,
+      values = cores,
+      labels = labels,
+      value.na = "white"
+    ),
+      title = "Soy",
+      position = tm_pos_in("left", "bottom")
+  ) +
+  tm_shape(biomes) +
+  tm_borders(
+    col = "grey40",
+    lwd = 0.6,
+    col.legend = tm_legend("Biomes")
+  ) +
+  tm_shape(matopiba) +
+  tm_borders(
+    col = "#3B5BDB",
+    lwd = 1,
+    col.legend = tm_legend("MATOPIBA")
+  ) +
+  tm_layout(
+    legend.frame = TRUE,
+    legend.bg.color = "white"
+  ) +
+  tm_add_legend(
+    type = "polygons",
+    labels = c("Biomes", "Matopiba"),
+    fill = c("white", "white"),
+    col = c("grey40", "#3B5BDB"),
+    lwd = c(0.6, 1),
+    position = tm_pos_in("left", "bottom")
+  )
+
+
+map_beef <-
+  tm_shape(dados) +
   tm_fill(
     fill = "DBeef",
     fill.scale = tm_scale_intervals(
       breaks = cuts,
       values = cores,
+      labels = labels,
       value.na = "white"
+    ),
+    fill.legend = tm_legend(
+      title = "Beef",
+      position = tm_pos_in("left", "bottom")
     )
   ) +
   tm_shape(biomes) +
-  tm_borders(col = "grey40", lwd = 0.6) +
-  tm_shape(matopiba) +
-  tm_borders(col = "#3B5BDB", lwd = 1)
-
-
-map_soy <- tm_shape(dados) +
-  tm_fill(
-    fill = "DSoy",
-    fill.scale = tm_scale_intervals(
-      breaks = cuts,
-      values = cores,
-      value.na = "white"
-    )
+  tm_borders(
+    col = "grey40",
+    lwd = 0.6,
+    col.legend = tm_legend("Biomes")
   ) +
-  tm_shape(biomes) +
-  tm_borders(col = "grey40", lwd = 0.6) +
   tm_shape(matopiba) +
-  tm_borders(col = "#3B5BDB", lwd = 1)
+  tm_borders(
+    col = "#3B5BDB",
+    lwd = 1,
+    col.legend = tm_legend("MATOPIBA")
+  ) +
+  tm_layout(
+    legend.frame = TRUE,
+    legend.bg.color = "white"
+  ) +
+  tm_add_legend(
+    type = "polygons",
+    labels = c("Biomes", "Matopiba"),
+    fill = c("white", "white"),
+    col = c("grey40", "#3B5BDB"),
+    lwd = c(0.6, 1),
+    position = tm_pos_in("left", "bottom")
+  )
 
-tmap_arrange(
-  map_beef,
-  map_soy,
-  ncol = 1
-)
+tmap_mode("plot")
+
+g_map_beef <- tmap_grob(map_beef)
+g_map_soy  <- tmap_grob(map_soy)
+
+g_map_beef <- as.ggplot(g_map_beef)
+g_map_soy  <- as.ggplot(g_map_soy)
+
+(g_map_beef | p_beef | w_beef) /
+  (g_map_soy  | p_soy  | w_soy)
 
