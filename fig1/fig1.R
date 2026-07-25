@@ -101,6 +101,7 @@ w_beef <- ggplot(beef, aes(x, y, fill=Destination)) +
   geom_tile(width=.82, height=.82, colour="white", linewidth=.8) +
   coord_equal() +
   scale_fill_manual(values=cores) +
+  scale_y_continuous(limits = c(0.5, 11.5)) +
   theme_void() +
   theme(
     plot.title=element_text(face="bold", hjust=.5),
@@ -116,6 +117,7 @@ w_soy <- ggplot(soy, aes(x, y, fill=Destination)) +
   geom_tile(width=.82, height=.82, colour="white", linewidth=.8) +
   coord_equal() +
   scale_fill_manual(values=cores) +
+  scale_y_continuous(limits = c(0.5, 11.5)) +
   theme_void() +
   theme(
     legend.position="right"
