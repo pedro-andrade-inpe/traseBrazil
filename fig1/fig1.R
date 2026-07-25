@@ -32,20 +32,30 @@ theme_fig <- theme_bw(base_size=13) +
         axis.line=element_line(colour="black"),
         plot.title=element_text(face="bold", hjust=.5),
         axis.title.x=element_blank(),
-        legend.position="none")
+        legend.position    = "bottom",
+        legend.title       = element_blank(),
+        legend.background  = element_blank(),
+        legend.box.margin  = margin(t = -5)
+        )
 
 p_beef <- ggplot(beef, aes(Region, SSP2)) +
-  geom_col(width=.55, fill="#b3001b") +
-  geom_linerange(aes(ymin=min, ymax=max), linewidth=.9) +
-  scale_y_continuous(limits=c(0,80), expand=c(0,0)) +
-  labs(title="Projected deforestation by biome (2020-2050)", y="Mha") +
+  geom_col(aes(fill = "SSP2 (central)"), width = .55) +
+  geom_linerange(aes(ymin = min, ymax = max, color = "Range across SSP1–SSP3"), 
+                 linewidth = .9) +
+  scale_y_continuous(limits = c(0, 80), expand = c(0, 0)) +
+  scale_fill_manual(values = c("SSP2 (central)" = "#b3001b")) +
+  scale_color_manual(values = c("Range across SSP1–SSP3" = "black")) +
+  labs(y = "Mha") +
   theme_fig
 
 p_soy <- ggplot(soy, aes(Region, SSP2)) +
-  geom_col(width=.55, fill="#b3001b") +
-  geom_linerange(aes(ymin=min, ymax=max), linewidth=.9) +
-  scale_y_continuous(limits=c(0,7), expand=c(0,0)) +
-  labs(y="Mha") +
+  geom_col(aes(fill = "SSP2 (central)"), width = .55) +
+  geom_linerange(aes(ymin = min, ymax = max, color = "Range across SSP1–SSP3"), 
+                 linewidth = .9) +
+  scale_y_continuous(limits = c(0, 80), expand = c(0, 0)) +
+  scale_fill_manual(values = c("SSP2 (central)" = "#b3001b")) +
+  scale_color_manual(values = c("Range across SSP1–SSP3" = "black")) +
+  labs(y = "Mha") +
   theme_fig
 
 waffle_data <- function(values, labels){
@@ -68,6 +78,20 @@ cores <- c(
   RoW    = "#C7C7C7"
 )
 
+leg_beef <- data.frame(
+  group = c("Brazil","China","EU","RoW"),
+  value = c(79,6,1,14),
+  x = 11.2,
+  y = c(9.5,8.5,7.5,6.5)
+)
+
+leg_soy <- data.frame(
+  group = c("Brazil","China","EU","RoW"),
+  value = c(23,44,10,23),
+  x = 11.2,
+  y = c(9.5,8.5,7.5,6.5)
+)
+
 beef <- waffle_data(
   values = c(79,6,1,14),
   labels = c("Brazil","China","EU","RoW")
@@ -77,7 +101,6 @@ w_beef <- ggplot(beef, aes(x, y, fill=group)) +
   geom_tile(width=.82, height=.82, colour="white", linewidth=.8) +
   coord_equal() +
   scale_fill_manual(values=cores) +
-  labs(title="Projected deforestation-risk exposure\nattributed to destination markets") +
   theme_void() +
   theme(
     plot.title=element_text(face="bold", hjust=.5),
@@ -97,7 +120,6 @@ w_soy <- ggplot(soy, aes(x, y, fill=group)) +
   theme(
     legend.position="right"
   )
-
 
 dataDir <- "c:/Users/pedro/Dropbox/colrow"
 cr <- colrow::getCR("Brazil", dataDir)
@@ -164,7 +186,11 @@ map_soy <-
   ) +
   tm_layout(
     legend.frame = TRUE,
-    legend.bg.color = "white"
+    legend.bg.color = "white",
+    inner.margins = c(0, 0, 0, 0),
+    outer.margins = 0,
+    frame = FALSE,
+    legend.text.size = 0.5
   ) +
   tm_add_legend(
     type = "polygons",
@@ -174,8 +200,6 @@ map_soy <-
     lwd = c(0.6, 1),
     position = tm_pos_in("left", "bottom")
   )
-
-map_soy
 
 map_beef <-
   tm_shape(dados) +
@@ -206,7 +230,11 @@ map_beef <-
   ) +
   tm_layout(
     legend.frame = TRUE,
-    legend.bg.color = "white"
+    legend.bg.color = "white",
+    inner.margins = c(0, 0, 0, 0),
+    outer.margins = 0,
+    frame = FALSE,
+    legend.text.size = 0.5
   ) +
   tm_add_legend(
     type = "polygons",
@@ -217,16 +245,41 @@ map_beef <-
     position = tm_pos_in("left", "bottom")
   )
 
-map_beef
+library(ggplot2)
+library(grid)
+
+add_tag <- function(p, tag){
+  p +
+    annotate(
+      "text",
+      x = -Inf,
+      y = Inf,
+      label = paste0("(", tag, ")"),
+      hjust = -0.3,
+      vjust = 1.4,
+      fontface = "bold",
+      size = 5
+    ) +
+    coord_cartesian(clip = "off")
+}
+
+
+g_map_beef <- as.ggplot(map_beef)
+g_map_soy  <- as.ggplot(map_soy)
+
+g_map_beef <- add_tag(g_map_beef, "a")
+p_beef     <- add_tag(p_beef, "b")
+w_beef     <- add_tag(w_beef, "c")
+
+g_map_soy  <- add_tag(g_map_soy, "d")
+p_soy      <- add_tag(p_soy, "e")
+w_soy      <- add_tag(w_soy, "f")
 
 tmap_mode("plot")
 
-g_map_beef <- tmap_grob(map_beef)
-g_map_soy  <- tmap_grob(map_soy)
-
-g_map_beef <- as.ggplot(g_map_beef)
-g_map_soy  <- as.ggplot(g_map_soy)
+pdf("result.pdf", width = 12, height = 8)
 
 (g_map_beef | p_beef | w_beef) /
-  (g_map_soy  | p_soy  | w_soy)
+  (g_map_soy  | p_soy  | w_soy) 
 
+dev.off()
