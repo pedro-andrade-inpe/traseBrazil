@@ -10,16 +10,16 @@ library(tmap)
 library(ggplotify)
 
 beef <- data.frame(
-  Region=factor(c("Brazil","Amazon","Caatinga","Cerrado","Pantanal"),
-                levels=c("Brazil","Amazon","Caatinga","Cerrado","Pantanal")),
+  Region=factor(c("Brazil","Amazon","Cerrado","Caatinga","Pantanal"),
+                levels=c("Brazil","Amazon","Cerrado","Caatinga","Pantanal")),
   SSP2=c(56.82,24.83,18.36,7.00,5.10),
   min=c(47.89,23.42,13.72,7.00,1.68),
   max=c(68.69,27.45,26.42,10.83,5.10)
 )
 
 soy <- data.frame(
-  Region=factor(c("Brazil","Amazon","Caatinga","Cerrado","Pantanal"),
-                levels=c("Brazil","Amazon","Caatinga","Cerrado","Pantanal")),
+  Region=factor(c("Brazil","Amazon","Cerrado","Caatinga","Pantanal"),
+                levels=c("Brazil","Amazon","Cerrado","Caatinga","Pantanal")),
   SSP2=c(5.66,0.00,0.00,5.54,0.06),
   min=c(3.36,0.00,0.00,3.29,0.00),
   max=c(5.66,0.00,0.00,5.54,0.06)
@@ -64,7 +64,7 @@ waffle_data <- function(values, labels){
   n[length(n)] <- 100 - sum(n[-length(n)])
   
   data.frame(
-    group = rep(labels, n),
+    Destination = rep(labels, n),
     x = rep(1:10, each=10),
     y = rep(10:1, times=10)
   )
@@ -79,14 +79,14 @@ cores <- c(
 )
 
 leg_beef <- data.frame(
-  group = c("Brazil","China","EU","RoW"),
+  Destination = c("Brazil","China","EU","RoW"),
   value = c(79,6,1,14),
   x = 11.2,
   y = c(9.5,8.5,7.5,6.5)
 )
 
 leg_soy <- data.frame(
-  group = c("Brazil","China","EU","RoW"),
+  Destination = c("Brazil","China","EU","RoW"),
   value = c(23,44,10,23),
   x = 11.2,
   y = c(9.5,8.5,7.5,6.5)
@@ -97,7 +97,7 @@ beef <- waffle_data(
   labels = c("Brazil","China","EU","RoW")
 )
 
-w_beef <- ggplot(beef, aes(x, y, fill=group)) +
+w_beef <- ggplot(beef, aes(x, y, fill=Destination)) +
   geom_tile(width=.82, height=.82, colour="white", linewidth=.8) +
   coord_equal() +
   scale_fill_manual(values=cores) +
@@ -112,7 +112,7 @@ soy <- waffle_data(
   labels = c("Brazil","China","EU","RoW")
 )
 
-w_soy <- ggplot(soy, aes(x, y, fill=group)) +
+w_soy <- ggplot(soy, aes(x, y, fill=Destination)) +
   geom_tile(width=.82, height=.82, colour="white", linewidth=.8) +
   coord_equal() +
   scale_fill_manual(values=cores) +
@@ -190,7 +190,7 @@ map_soy <-
     inner.margins = c(0, 0, 0, 0),
     outer.margins = 0,
     frame = FALSE,
-    legend.text.size = 0.5
+    legend.text.size = 0.4
   ) +
   tm_add_legend(
     type = "polygons",
@@ -234,7 +234,7 @@ map_beef <-
     inner.margins = c(0, 0, 0, 0),
     outer.margins = 0,
     frame = FALSE,
-    legend.text.size = 0.5
+    legend.text.size = 0.4
   ) +
   tm_add_legend(
     type = "polygons",
