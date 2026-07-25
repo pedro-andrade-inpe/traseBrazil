@@ -5,25 +5,25 @@ library(tidyr)
 dados <- data.frame(
   Bioma = c("Amazonia", "Atlantic Forest", "Caatinga", "Cerrado", "Pampa", "Pantanal"),
   Forest = c(92, 88, 14, 30, 32, 25),
-  `OWL (other wooded land)` = c(1, 6, 79, 52, 0, 18),
+  `OWL` = c(1, 6, 79, 52, 0, 18),
   Other = c(7, 6, 7, 18, 68, 57),
   check.names = FALSE
 )
 
 dados_long <- dados %>%
   pivot_longer(
-    cols = c("Forest", "OWL (other wooded land)", "Other"),
+    cols = c("Forest", "OWL", "Other"),
     names_to = "Categoria",
     values_to = "Porcentagem"
   ) %>%
   mutate(
     Bioma = factor(Bioma, levels = rev(c("Amazonia", "Atlantic Forest", "Caatinga", "Cerrado", "Pampa", "Pantanal"))),
-    Categoria = factor(Categoria, levels = c("Other", "OWL (other wooded land)", "Forest"))
+    Categoria = factor(Categoria, levels = c("Other", "OWL", "Forest"))
   )
 
 cores <- c(
   "Forest" = "#488B39",
-  "OWL (other wooded land)" = "#ED6E2B",
+  "OWL" = "#ED6E2B",
   "Other" = "#EBEBEB"
 )
 
@@ -44,7 +44,7 @@ plot_biomes <- ggplot(dados_long, aes(x = Bioma, y = Porcentagem, fill = Categor
   ) +
   scale_color_identity() +
   coord_flip(clip = "off") +
-  scale_fill_manual(values = cores, breaks = c("Forest", "OWL (other wooded land)", "Other")) +
+  scale_fill_manual(values = cores, breaks = c("Forest", "OWL", "Other")) +
   scale_y_continuous(
     limits = c(0, 100),
     breaks = seq(0, 100, by = 25),
@@ -52,7 +52,7 @@ plot_biomes <- ggplot(dados_long, aes(x = Bioma, y = Porcentagem, fill = Categor
     expand = c(0, 0)
   ) +
   labs(
-    title = "Distribution of native vegetation types\nin Brazilian biomes",
+    title = "",
     x = NULL,
     y = NULL
   ) +
@@ -73,38 +73,45 @@ plot_biomes <- ggplot(dados_long, aes(x = Bioma, y = Porcentagem, fill = Categor
   )
 
 ############## LOWER
-
-
 dados <- data.frame(
   Region = rep(c("EU", "China", "EU + China"), each = 6),
   Commodity = rep(c("Soy", "Beef"), times = 9),
-  Policy = factor(rep(rep(c("EUDR", "EUDR-OWL", "ZD (maximum)"), each = 2), times = 3),
-                  levels = c("EUDR", "EUDR-OWL", "ZD (maximum)")), # Ordem de baixo para cima
+  Policy = factor(
+    rep(rep(c("EUDR", "EUDR-OWL", "ZD (maximum)"), each = 2), times = 3),
+    levels = c("EUDR", "EUDR-OWL", "ZD (maximum)")
+  ),
   Value = c(
     # EU
-    0.05, 0.05, 0.34, 0.09, 0.59, 0.18,
+    0.0493431, 0.0478715, 0.3253370, 0.0900238, 0.5250170, 0.1830560,
     # China
-    0.22, 1.03, 1.72, 2.05, 2.52, 3.45,
+    0.2403230, 0.9758670, 1.7961800, 2.0172300, 2.5397200, 3.4573100,
     # EU + China
-    0.27, 1.08, 2.06, 2.14, 3.10, 3.63
+    0.2896661, 1.0237385, 2.1215170, 2.1072538, 3.0647370, 3.6403660
   ),
-  sd_val = c(
-    0.15, 0.15, 0.19, 0.31, 0.14, 0.20,
-    0.35, 0.98, 0.70, 1.15, 1.10, 1.65,
-    0.35, 0.98, 0.82, 1.15, 1.40, 1.55
+  ymin = c(
+    # EU
+    0.00595659, 0.0427862, 0.2132280, 0.0721955, 0.3220790, 0.1238400,
+    # China
+    0.0439526, 0.6039230, 1.0945500, 0.9566030, 1.5360500, 1.4989900,
+    # EU + China
+    0.04990919, 0.6620787, 1.3444680, 1.0488995, 1.8670190, 1.6650900
+  ),
+  ymax = c(
+    # EU
+    0.0929802, 0.0946893, 0.6671580, 0.1553970, 0.9957340, 0.3256030,
+    # China
+    0.5176710, 1.4394600, 2.1325000, 2.8074400, 2.9966100, 4.3846300,
+    # EU + China
+    0.5797909, 1.4982263, 2.4742030, 2.9010868, 3.5474820, 4.5780640
   )
-) %>%
-  mutate(
-    ymax = Value + sd_val,
-    ymin = Value
-  )
+)
 
 dados$Region <- factor(dados$Region, levels = c("EU", "China", "EU + China"))
 
 region_labels <- c(
-  "EU" = "EU\n(ZD total = 0.77 Mha)",
-  "China" = "China\n(ZD total = 5.97 Mha)",
-  "EU + China" = "EU + China\n(ZD total = 6.73 Mha)"
+  "EU" = "EU",
+  "China" = "China",
+  "EU + China" = "EU + China"
 )
 
 cores_commodity <- c("Soy" = "#0B3C85", "Beef" = "#B3001B")
@@ -128,12 +135,12 @@ soy_beef <- ggplot(dados, aes(x = Policy, y = Value, fill = Commodity)) +
   facet_wrap(~Region, scales = "free_x", labeller = labeller(Region = region_labels)) +
   scale_fill_manual(values = cores_commodity) +
   scale_y_continuous(
-    limits = c(0, 6),        # Limite até 6.5 para dar margem de sobra aos textos
-    breaks = 0:6,              # Marcas no eixo de 0, 1, 2, 3, 4, 5, 6
+    limits = c(0, 6),
+    breaks = 0:6,
     expand = c(0, 0)
   ) +
   labs(
-    title = expression(bold("Net avoided deforestation–risk exposure")),
+    title = "",
     x = NULL,
     y = "Million hectares (Mha)"
   ) +
@@ -296,18 +303,27 @@ map_owl <-
     position = tm_pos_in("left", "bottom")
   )
 
-
 tmap_mode("plot")
 
 pdf("fig2.pdf", width = 12, height = 8)
 #png("fig1.png", width = 1200, height = 800)
 
-g_map_forest <- as.ggplot(map_forest)
-g_map_owl  <- as.ggplot(map_owl)
+g_map_forest <- as.ggplot(map_forest)#, scale = 1.15, vjust = -0.08)
+g_map_owl  <- as.ggplot(map_owl)#, scale = 1.15, vjust = -0.08)
 
-(g_map_forest | g_map_owl | plot_biomes) /
-  (soy_beef) 
+top <-
+  g_map_forest +
+  g_map_owl +
+  plot_biomes +
+  plot_layout(widths = c(1.4, 1.4, 0.8))
+
+bottom <- soy_beef
+
+final_plot <-
+  top /
+  bottom +
+  plot_layout(heights = c(1.2, 1))
+
+final_plot
 
 dev.off()
-
-
