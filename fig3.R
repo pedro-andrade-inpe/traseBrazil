@@ -32,7 +32,7 @@ cores <- c(
   "EU market"="#176A96"
 )
 
-pdf("fig3.pdf", width = 12, height = 8)
+pdf("fig3.pdf", width = 12, height = 4)
 
 ggplot(dados,
        aes(y=Policy,
@@ -45,10 +45,10 @@ ggplot(dados,
       xmax = Max
     ),
     orientation = "y",
-    width = .18,
+    width = 0,
     linewidth = .7,
     colour = "grey40"
-  )+
+  ) +
   scale_fill_manual(values=cores) +
   scale_x_continuous(
     limits=c(0,35),
@@ -66,7 +66,7 @@ ggplot(dados,
     axis.text.y=element_text(size=16),
     axis.text.x=element_text(size=13)
   ) +scale_x_continuous(
-    limits = c(-15, 35),
+    limits = c(0, 35),
     expand = c(0,0)
   ) +
   coord_cartesian(clip = "off")
