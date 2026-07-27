@@ -90,7 +90,7 @@ library(ggplot2)
 brace_data <- data.frame(
   Grupo = c(
     "Domestic\npolicy",
-    "Private\nsector\n(traders)",
+    "Private sector\n(traders)",
     "EU + China\nmarkets",
     "EU\nmarket"
   ),
@@ -152,9 +152,9 @@ left_panel <-
   coord_cartesian(clip="off") +
   theme_void()
 
-png("fig3.png", width = 1200, height = 400)
+#png("fig3.png", width = 1200, height = 400)
 
-#pdf("fig3.pdf", width = 12, height = 4)
+pdf("fig3.pdf", width = 12, height = 4)
 (left_panel | right_panel) +
-  plot_layout(widths = c(0.18, 0.82))
+  plot_layout(widths = c(0.20, 0.80))
 dev.off()

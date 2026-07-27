@@ -107,8 +107,8 @@ dados <- data.frame(
   Region = rep(c("EU", "China", "EU + China"), each = 6),
   Commodity = rep(c("Soy", "Beef"), times = 9),
   Policy = factor(
-    rep(rep(c("EUDR", "EUDR-OWL", "ZD (maximum)"), each = 2), times = 3),
-    levels = c("EUDR", "EUDR-OWL", "ZD (maximum)")
+    rep(rep(c("EUDR", "EUDR-OWL", "ZD"), each = 2), times = 3),
+    levels = c("EUDR", "EUDR-OWL", "ZD")
   ),
   Value = c(
     0.0493431, 0.0478715, 0.3253370, 0.0900238, 0.5250170, 0.1830560,
@@ -203,7 +203,7 @@ sf::write_sf(cr, "BrazilCR.gpkg")
 
 dados <- colrow::processFile(
   "BrazilCR.gpkg",
-  "c:/Users/pedro/Downloads/output_fig2.csv",
+  "data/output_fig2.csv",
   colrow::attrs(COUNTRY, ID, USE, VALUE)
 )
 
@@ -291,7 +291,6 @@ cores <- c(
   "#b54a00"
 )
 
-
 map_owl <-
   tm_shape(dados) + 
   tm_fill(
@@ -338,10 +337,6 @@ map_owl <-
 
 tmap_mode("plot")
 
-#png("fig1.png", width = 1200, height = 800)
-
-
-
 g_map_forest <- as.ggplot(map_forest, scale = 1.02)#, vjust = -0.08)
 g_map_owl  <- as.ggplot(map_owl, scale = 1.02)#, vjust = -0.08)
 
@@ -373,8 +368,8 @@ final_plot <-
     plot.tag.position = c(0.01, 0.99)
   )
 
-png("fig2.png", width = 1200, height = 800)
+#png("fig2.png", width = 1200, height = 800)
 
-#pdf("fig2.pdf", width = 12, height = 8)
+pdf("fig2.pdf", width = 12, height = 8)
 final_plot
 dev.off()

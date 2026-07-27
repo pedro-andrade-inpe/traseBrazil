@@ -129,7 +129,7 @@ sf::write_sf(cr, "BrazilCR.gpkg")
 
 dados <- colrow::processFile(
   "BrazilCR.gpkg",
-  "c:/Users/pedro/Downloads/fig1/output_fig_s1_SSP2.csv",
+  "data/output_fig_s1_SSP2.csv",
   colrow::attrs(COUNTRY, ID, DRIVER, VALUE)
 )
 
@@ -269,18 +269,18 @@ add_tag <- function(p, tag){
 g_map_beef <- as.ggplot(map_beef)
 g_map_soy  <- as.ggplot(map_soy)
 
-g_map_beef <- add_tag(g_map_beef, "(a) Beef")
+g_map_beef <- add_tag(g_map_beef, "(a)")
 p_beef     <- add_tag(p_beef, "(b)")
 w_beef     <- add_tag(w_beef, "(c)")
 
-g_map_soy  <- add_tag(g_map_soy, "(d) Soy")
+g_map_soy  <- add_tag(g_map_soy, "(d)")
 p_soy      <- add_tag(p_soy, "(e)")
 w_soy      <- add_tag(w_soy, "(f)")
 
 tmap_mode("plot")
 
-#pdf("fig1.pdf", width = 12, height = 8)
-png("fig1.png", width = 1200, height = 800)
+pdf("fig1.pdf", width = 12, height = 8)
+#png("fig1.png", width = 1200, height = 800)
 
 (g_map_beef | p_beef | w_beef) /
   (g_map_soy  | p_soy  | w_soy) 
