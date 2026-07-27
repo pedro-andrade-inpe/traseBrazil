@@ -73,6 +73,7 @@ plot_biomes <- ggplot(dados_long, aes(x = Bioma, y = Porcentagem, fill = Categor
   )
 
 ############## LOWER
+
 dados <- data.frame(
   Region = rep(c("EU", "China", "EU + China"), each = 6),
   Commodity = rep(c("Soy", "Beef"), times = 9),
@@ -81,86 +82,92 @@ dados <- data.frame(
     levels = c("EUDR", "EUDR-OWL", "ZD (maximum)")
   ),
   Value = c(
-    # EU
     0.0493431, 0.0478715, 0.3253370, 0.0900238, 0.5250170, 0.1830560,
-    # China
     0.2403230, 0.9758670, 1.7961800, 2.0172300, 2.5397200, 3.4573100,
-    # EU + China
     0.2896661, 1.0237385, 2.1215170, 2.1072538, 3.0647370, 3.6403660
   ),
   ymin = c(
-    # EU
     0.00595659, 0.0427862, 0.2132280, 0.0721955, 0.3220790, 0.1238400,
-    # China
     0.0439526, 0.6039230, 1.0945500, 0.9566030, 1.5360500, 1.4989900,
-    # EU + China
     0.04990919, 0.6620787, 1.3444680, 1.0488995, 1.8670190, 1.6650900
   ),
   ymax = c(
-    # EU
     0.0929802, 0.0946893, 0.6671580, 0.1553970, 0.9957340, 0.3256030,
-    # China
     0.5176710, 1.4394600, 2.1325000, 2.8074400, 2.9966100, 4.3846300,
-    # EU + China
     0.5797909, 1.4982263, 2.4742030, 2.9010868, 3.5474820, 4.5780640
   )
 )
 
-dados$Region <- factor(dados$Region, levels = c("EU", "China", "EU + China"))
+dados$Region <- factor(dados$Region,
+                       levels = c("EU","China","EU + China"))
 
-region_labels <- c(
-  "EU" = "EU",
-  "China" = "China",
-  "EU + China" = "EU + China"
+cores_commodity <- c(
+  Soy="#0B3C85",
+  Beef="#B3001B"
 )
 
-cores_commodity <- c("Soy" = "#0B3C85", "Beef" = "#B3001B")
+make_plot <- function(regiao){
+  
+  ggplot(
+    subset(dados, Region == regiao),
+    aes(x = Policy, y = Value, fill = Commodity)
+  ) +
+    geom_col(
+      position = position_dodge(width = 0.7),
+      width = 0.6
+    ) +
+    geom_errorbar(
+      aes(
+        ymin = ymin,
+        ymax = ymax,
+        group = Commodity
+      ),
+      position = position_dodge(width = 0.7),
+      width = 0.2,
+      linewidth = 0.4,
+      color = "black"
+    ) +
+    geom_text(
+      aes(
+        y = ymax,
+        label = sprintf("%.2f", Value),
+        group = Commodity
+      ),
+      position = position_dodge(width = 0.7),
+      hjust = -0.3,
+      size = 3.5
+    ) +
+    coord_flip() +
+    scale_fill_manual(values = cores_commodity) +
+    scale_y_continuous(
+      limits = c(0,6),
+      breaks = 0:6,
+      expand = c(0,0)
+    ) +
+    labs(
+      title = regiao,
+      x = NULL,
+      y = "Million hectares (Mha)"
+    ) +
+    theme_classic(base_size = 12) +
+    theme(
+      plot.title = element_text(
+        face = "bold",
+        hjust = 0.5,
+        size = 11
+      ),
+      axis.line.y = element_line(color = "black"),
+      axis.line.x = element_line(color = "black"),
+      legend.position = "bottom",
+      legend.title = element_blank(),
+      legend.key.size = unit(0.4,"cm"),
+      legend.margin = margin(t = 10)
+    )
+}
 
-soy_beef <- ggplot(dados, aes(x = Policy, y = Value, fill = Commodity)) +
-  geom_col(position = position_dodge(width = 0.7), width = 0.6) +
-  geom_errorbar(
-    aes(ymin = Value, ymax = ymax, group = Commodity),
-    position = position_dodge(width = 0.7),
-    width = 0.2,
-    linewidth = 0.4,
-    color = "black"
-  ) +
-  geom_text(
-    aes(y = ymax, label = sprintf("%.2f", Value), group = Commodity),
-    position = position_dodge(width = 0.7),
-    hjust = -0.3,
-    size = 3.5
-  ) +
-  coord_flip() +
-  facet_wrap(~Region, scales = "free_x", labeller = labeller(Region = region_labels)) +
-  scale_fill_manual(values = cores_commodity) +
-  scale_y_continuous(
-    limits = c(0, 6),
-    breaks = 0:6,
-    expand = c(0, 0)
-  ) +
-  labs(
-    title = "",
-    x = NULL,
-    y = "Million hectares (Mha)"
-  ) +
-  theme_classic(base_size = 12) +
-  theme(
-    plot.title = element_text(size = 13, face = "plain", hjust = 0),
-    strip.background = element_blank(), # Remove caixa do título das facets
-    strip.text = element_text(face = "bold", size = 11),
-    axis.line.y = element_line(color = "black"),
-    axis.line.x = element_line(color = "black"),
-    panel.spacing = unit(2, "lines"),
-    legend.position = "bottom",          # Move a legenda para a parte inferior
-    legend.direction = "horizontal",     # Deixa os itens lado a lado
-    legend.title = element_blank(),      # Remove o título da legenda
-    legend.key.size = unit(0.4, "cm"),
-    legend.margin = margin(t = 10),      # Dá um espaço em relação ao eixo X
-  )
-
-soy_beef
-
+plot_eu <- make_plot("EU")
+plot_china <- make_plot("China")
+plot_eu_china <- make_plot("EU + China")
 
 ########################################################
 
@@ -317,12 +324,15 @@ top <-
   plot_biomes +
   plot_layout(widths = c(1.4, 1.4, 0.8))
 
-bottom <- soy_beef
+bottom <-
+  plot_eu +
+  plot_china +
+  plot_eu_china +
+  plot_layout(widths = c(1,1,1))
 
 final_plot <-
   top /
-  bottom +
-  plot_layout(heights = c(1.2, 1))
+  bottom
 
 final_plot
 
