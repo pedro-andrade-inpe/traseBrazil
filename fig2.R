@@ -5,7 +5,7 @@ library(tidyr)
 dados <- data.frame(
   Bioma = c("Amazonia", "Atlantic Forest", "Caatinga", "Cerrado", "Pampa", "Pantanal"),
   Forest = c(92, 88, 14, 30, 32, 25),
-  `OWL` = c(1, 6, 79, 52, 0, 18),
+  OWL = c(1, 6, 79, 52, 0, 18),
   Other = c(7, 6, 7, 18, 68, 57),
   check.names = FALSE
 )
@@ -17,51 +17,80 @@ dados_long <- dados %>%
     values_to = "Porcentagem"
   ) %>%
   mutate(
-    Bioma = factor(Bioma, levels = rev(c("Amazonia", "Atlantic Forest", "Caatinga", "Cerrado", "Pampa", "Pantanal"))),
-    Categoria = factor(Categoria, levels = c("Other", "OWL", "Forest"))
+    Bioma = factor(
+      Bioma,
+      levels = rev(c(
+        "Amazonia",
+        "Atlantic Forest",
+        "Caatinga",
+        "Cerrado",
+        "Pampa",
+        "Pantanal"
+      ))
+    ),
+    Categoria = factor(
+      Categoria,
+      levels = c("Other", "OWL", "Forest")
+    )
   )
 
 cores <- c(
-  "Forest" = "#488B39",
-  "OWL" = "#ED6E2B",
-  "Other" = "#EBEBEB"
+  Forest = "#488B39",
+  OWL = "#ED6E2B",
+  Other = "#EBEBEB"
 )
 
-pos_empilhada <- position_stack(vjust = 0.5)
-
-plot_biomes <- ggplot(dados_long, aes(x = Bioma, y = Porcentagem, fill = Categoria)) +
-  geom_col(position = position_stack(), width = 0.7) +
+plot_biomes <-
+  ggplot(
+    dados_long,
+    aes(
+      x = Bioma,
+      y = Porcentagem,
+      fill = Categoria
+    )
+  ) +
+  geom_col(width = 0.7) +
   geom_text(
     data = subset(dados_long, Porcentagem > 0),
     aes(
       label = paste0(Porcentagem, "%"),
       color = ifelse(Categoria == "Other", "black", "white")
     ),
-    position = pos_empilhada, 
+    position = position_stack(vjust = 0.5),
     size = 4,
     fontface = "bold",
     show.legend = FALSE
   ) +
   scale_color_identity() +
   coord_flip(clip = "off") +
-  scale_fill_manual(values = cores, breaks = c("Forest", "OWL", "Other")) +
+  scale_fill_manual(
+    values = cores,
+    breaks = c("Forest", "OWL", "Other")
+  ) +
   scale_y_continuous(
     limits = c(0, 100),
-    breaks = seq(0, 100, by = 25),
-    labels = c("0%", "25%", "50%", "75%", "100%"),
+    breaks = seq(0, 100, 25),
+    labels = paste0(seq(0, 100, 25), "%"),
     expand = c(0, 0)
   ) +
   labs(
-    title = "",
     x = NULL,
     y = NULL
   ) +
   theme_classic(base_size = 13) +
   theme(
-    plot.margin = margin(t = 10, r = 20, b = 10, l = 10),
-    plot.title = element_text(face = "bold", hjust = 0.5, size = 14, margin = margin(b = 15)),
-    axis.text.y = element_text(size = 12, color = "black", face = "bold"),
-    axis.text.x = element_text(size = 11, color = "black"),
+    plot.margin = margin(10, 20, 10, 10),
+    
+    axis.text.y = element_text(
+      size = 12,
+      colour = "black",
+      face = "bold"
+    ),
+    axis.text.x = element_text(
+      size = 11,
+      colour = "black"
+    ),
+    
     axis.line.y = element_blank(),
     axis.ticks.y = element_blank(),
     
@@ -110,7 +139,7 @@ make_plot <- function(regiao){
   
   ggplot(
     subset(dados, Region == regiao),
-    aes(x = Policy, y = Value, fill = Commodity)
+    aes(y = Policy, x = Value, fill = Commodity)
   ) +
     geom_col(
       position = position_dodge(width = 0.7),
@@ -118,8 +147,8 @@ make_plot <- function(regiao){
     ) +
     geom_errorbar(
       aes(
-        ymin = ymin,
-        ymax = ymax,
+        xmin = ymin,
+        xmax = ymax,
         group = Commodity
       ),
       position = position_dodge(width = 0.7),
@@ -129,7 +158,7 @@ make_plot <- function(regiao){
     ) +
     geom_text(
       aes(
-        y = ymax,
+        x = ymax,
         label = sprintf("%.2f", Value),
         group = Commodity
       ),
@@ -137,17 +166,16 @@ make_plot <- function(regiao){
       hjust = -0.3,
       size = 3.5
     ) +
-    coord_flip() +
     scale_fill_manual(values = cores_commodity) +
-    scale_y_continuous(
-      limits = c(0,6),
+    scale_x_continuous(
+      limits = c(0, 6),
       breaks = 0:6,
-      expand = c(0,0)
+      expand = c(0, 0)
     ) +
     labs(
       title = regiao,
-      x = NULL,
-      y = "Million hectares (Mha)"
+      x = "Million hectares (Mha)",
+      y = NULL
     ) +
     theme_classic(base_size = 12) +
     theme(
@@ -160,11 +188,10 @@ make_plot <- function(regiao){
       axis.line.x = element_line(color = "black"),
       legend.position = "bottom",
       legend.title = element_blank(),
-      legend.key.size = unit(0.4,"cm"),
+      legend.key.size = unit(0.4, "cm"),
       legend.margin = margin(t = 10)
     )
 }
-
 plot_eu <- make_plot("EU")
 plot_china <- make_plot("China")
 plot_eu_china <- make_plot("EU + China")
@@ -312,11 +339,12 @@ map_owl <-
 
 tmap_mode("plot")
 
-pdf("fig2.pdf", width = 12, height = 8)
 #png("fig1.png", width = 1200, height = 800)
 
-g_map_forest <- as.ggplot(map_forest)#, scale = 1.15, vjust = -0.08)
-g_map_owl  <- as.ggplot(map_owl)#, scale = 1.15, vjust = -0.08)
+
+
+g_map_forest <- as.ggplot(map_forest, scale = 1.02)#, vjust = -0.08)
+g_map_owl  <- as.ggplot(map_owl, scale = 1.02)#, vjust = -0.08)
 
 top <-
   g_map_forest +
@@ -334,6 +362,18 @@ final_plot <-
   top /
   bottom
 
-final_plot
+final_plot <-
+  (top / bottom) +
+  plot_annotation(
+    tag_levels = "a",
+    tag_prefix = "(",
+    tag_suffix = ")"
+  ) &
+  theme(
+    plot.tag = element_text(face = "bold", size = 15),
+    plot.tag.position = c(0.01, 0.99)
+  )
 
+pdf("fig2.pdf", width = 12, height = 8)
+final_plot
 dev.off()
