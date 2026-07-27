@@ -2,7 +2,5 @@
 .Rhistory
 *.RData*
 .Ruserdata
-result
 *.pdf
 *.png
-*output*
