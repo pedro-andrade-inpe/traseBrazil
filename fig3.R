@@ -32,11 +32,16 @@ cores <- c(
   "EU market"="#176A96"
 )
 
-right_panel <- ggplot(dados,
-       aes(y=Policy,
-           x=Valor,
-           fill=Grupo)) +
-  geom_col(width=.58) +
+right_panel <- ggplot(
+  dados,
+  aes(
+    y = Policy,
+    x = Valor,
+    fill = Grupo
+  )
+) +
+  geom_col(width = .58) +
+  
   geom_errorbar(
     aes(
       xmin = Min,
@@ -47,28 +52,38 @@ right_panel <- ggplot(dados,
     linewidth = .7,
     colour = "grey40"
   ) +
-  scale_fill_manual(values=cores) +
+  
+  scale_fill_manual(values = cores) +
+  
   scale_x_continuous(
-    limits=c(0,35),
-    expand=c(0,0)
+    limits = c(0, 32),
+    breaks = seq(0, 32, by = 8),
+    expand = c(0, 0)
   ) +
+  
   labs(
-    x="Avoided soy- and beef-driven deforestation (Mha)",
-    y=NULL
+    x = "Avoided soy- and beef-driven deforestation (Mha)",
+    y = NULL
   ) +
-  theme_classic(base_size=13) +
+  
+  theme_classic(base_size = 13) +
+  
   theme(
-    legend.position="none",
-    axis.line.y=element_blank(),
-    axis.ticks.y=element_blank(),
-    axis.text.y=element_text(size=13),
-    axis.text.x=element_text(size=13)
-  ) +scale_x_continuous(
-    limits = c(0, 35),
-    expand = c(0,0)
-  ) +
-  coord_cartesian(clip = "off")
-
+    legend.position = "none",
+    
+    axis.line.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    
+    axis.text.y = element_text(size = 13),
+    axis.text.x = element_text(size = 13),
+    
+    panel.grid.major.x = element_line(
+      colour = "grey88",
+      linewidth = 0.6
+    ),
+    panel.grid.minor.x = element_blank(),
+    panel.grid.major.y = element_blank()
+  )
 
 library(ggplot2)
 
@@ -137,8 +152,9 @@ left_panel <-
   coord_cartesian(clip="off") +
   theme_void()
 
+png("fig3.png", width = 1200, height = 400)
 
-pdf("fig3.pdf", width = 12, height = 4)
+#pdf("fig3.pdf", width = 12, height = 4)
 (left_panel | right_panel) +
   plot_layout(widths = c(0.18, 0.82))
 dev.off()
