@@ -3,7 +3,7 @@ library(dplyr)
 library(tidyr)
 
 dados <- data.frame(
-  Bioma = c("Amazonia", "Atlantic Forest", "Caatinga", "Cerrado", "Pampa", "Pantanal"),
+  Bioma = c("Amazon", "Atlantic Forest", "Caatinga", "Cerrado", "Pampa", "Pantanal"),
   Forest = c(92, 88, 14, 30, 32, 25),
   OWL = c(1, 6, 79, 52, 0, 18),
   Other = c(7, 6, 7, 18, 68, 57),
@@ -20,7 +20,7 @@ dados_long <- dados %>%
     Bioma = factor(
       Bioma,
       levels = rev(c(
-        "Amazonia",
+        "Amazon",
         "Atlantic Forest",
         "Caatinga",
         "Cerrado",
@@ -145,14 +145,13 @@ make_plot <- function(regiao){
       position = position_dodge(width = 0.7),
       width = 0.6
     ) +
-    geom_errorbar(
+    geom_linerange(
       aes(
         xmin = ymin,
         xmax = ymax,
         group = Commodity
       ),
       position = position_dodge(width = 0.7),
-      width = 0.2,
       linewidth = 0.4,
       color = "black"
     ) +
@@ -374,6 +373,8 @@ final_plot <-
     plot.tag.position = c(0.01, 0.99)
   )
 
-pdf("fig2.pdf", width = 12, height = 8)
+png("fig2.png", width = 1200, height = 800)
+
+#pdf("fig2.pdf", width = 12, height = 8)
 final_plot
 dev.off()
