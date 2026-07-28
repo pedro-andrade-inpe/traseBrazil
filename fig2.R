@@ -2,6 +2,9 @@ library(ggplot2)
 library(dplyr)
 library(tidyr)
 
+biomes <- sf::read_sf("data/br_biomes.dbf")
+matopiba <- sf::read_sf("data/matopiba.shp")
+
 dados <- data.frame(
   Bioma = c("Amazon", "Atlantic Forest", "Caatinga", "Cerrado", "Pampa", "Pantanal"),
   Forest = c(92, 88, 14, 30, 32, 25),

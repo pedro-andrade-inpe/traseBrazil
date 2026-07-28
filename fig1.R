@@ -9,6 +9,9 @@ library(scales)
 library(tmap)
 library(ggplotify)
 
+biomes <- sf::read_sf("data/br_biomes.dbf")
+matopiba <- sf::read_sf("data/matopiba.shp")
+
 beef <- data.frame(
   Region=factor(c("Brazil","Amazon","Cerrado","Caatinga","Pantanal"),
                 levels=c("Brazil","Amazon","Cerrado","Caatinga","Pantanal")),
@@ -20,9 +23,9 @@ beef <- data.frame(
 soy <- data.frame(
   Region=factor(c("Brazil","Amazon","Cerrado","Caatinga","Pantanal"),
                 levels=c("Brazil","Amazon","Cerrado","Caatinga","Pantanal")),
-  SSP2=c(5.66,0.00,0.00,5.54,0.06),
-  min=c(3.36,0.00,0.00,3.29,0.00),
-  max=c(5.66,0.00,0.00,5.54,0.06)
+  SSP2=c(5.66,0.00,5.54,0.00,0.06),
+  min=c(3.36,0.00,3.29,0.00,0.00),
+  max=c(5.66,0.00,5.54,0.00,0.06)
 )
 
 theme_fig <- theme_bw(base_size=13) +
@@ -279,8 +282,8 @@ w_soy      <- add_tag(w_soy, "(f)")
 
 tmap_mode("plot")
 
-pdf("fig1.pdf", width = 12, height = 8)
-#png("fig1.png", width = 1200, height = 800)
+#pdf("fig1.pdf", width = 12, height = 8)
+png("fig1.png", width = 1200, height = 800)
 
 (g_map_beef | p_beef | w_beef) /
   (g_map_soy  | p_soy  | w_soy) 
