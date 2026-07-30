@@ -81,49 +81,79 @@ cores <- c(
   RoW    = "#C7C7C7"
 )
 
-leg_beef <- data.frame(
-  Destination = c("Brazil","China","EU","RoW"),
-  value = c(79,6,1,14),
-  x = 11.2,
-  y = c(9.5,8.5,7.5,6.5)
-)
-
-leg_soy <- data.frame(
-  Destination = c("Brazil","China","EU","RoW"),
-  value = c(23,44,10,23),
-  x = 11.2,
-  y = c(9.5,8.5,7.5,6.5)
+labels_beef <- c(
+  "Brazil\n79% (79–93%)",
+  "China\n6% (3–6%)",
+  "EU\n1% (<1–1%)",
+  "RoW\n14% (3–15%)"
 )
 
 beef <- waffle_data(
-  values = c(79,6,1,14),
-  labels = c("Brazil","China","EU","RoW")
+  values = c(79, 6, 1, 14),
+  labels = c("Brazil", "China", "EU", "RoW")
 )
 
-w_beef <- ggplot(beef, aes(x, y, fill=Destination)) +
-  geom_tile(width=.82, height=.82, colour="white", linewidth=.8) +
+beef$Destination <- factor(
+  beef$Destination,
+  levels = c("Brazil", "China", "EU", "RoW"),
+  labels = labels_beef
+)
+
+cores_beef <- c(
+  "Brazil\n79% (79–93%)" = "#b3001b",
+  "China\n6% (3–6%)"     = "#FF8C00",
+  "EU\n1% (<1–1%)"        = "#FFD54F",
+  "RoW\n14% (3–15%)"     = "#C7C7C7"
+)
+
+w_beef <- ggplot(beef, aes(x, y, fill = Destination)) +
+  geom_tile(width = .82, height = .82, colour = "white", linewidth = .8) +
   coord_equal() +
-  scale_fill_manual(values=cores) +
+  scale_fill_manual(values = cores_beef) +
   scale_y_continuous(limits = c(0.5, 11.5)) +
   theme_void() +
   theme(
-    plot.title=element_text(face="bold", hjust=.5),
-    legend.position="right"
+    plot.title = element_text(face = "bold", hjust = .5),
+    legend.position = "right",
+    legend.title = element_blank(),
+    legend.text = element_text(lineheight = 0.9)
   )
 
-soy <- waffle_data(
-  values = c(23,44,10,23),
-  labels = c("Brazil","China","EU","RoW")
+labels_soy <- c(
+  "Brazil\n23% (19–27%)",
+  "China\n44% (42–54%)",
+  "EU\n10% (9–18%)",
+  "RoW\n23% (13–24%)"
 )
 
-w_soy <- ggplot(soy, aes(x, y, fill=Destination)) +
-  geom_tile(width=.82, height=.82, colour="white", linewidth=.8) +
+soy <- waffle_data(
+  values = c(23, 44, 10, 23),
+  labels = c("Brazil", "China", "EU", "RoW")
+)
+
+soy$Destination <- factor(
+  soy$Destination,
+  levels = c("Brazil", "China", "EU", "RoW"),
+  labels = labels_soy
+)
+
+cores_soy <- c(
+  "Brazil\n23% (19–27%)" = "#b3001b",
+  "China\n44% (42–54%)"  = "#FF8C00",
+  "EU\n10% (9–18%)"      = "#FFD54F",
+  "RoW\n23% (13–24%)"    = "#C7C7C7"
+)
+
+w_soy <- ggplot(soy, aes(x, y, fill = Destination)) +
+  geom_tile(width = .82, height = .82, colour = "white", linewidth = .8) +
   coord_equal() +
-  scale_fill_manual(values=cores) +
+  scale_fill_manual(values = cores_soy) +
   scale_y_continuous(limits = c(0.5, 11.5)) +
   theme_void() +
   theme(
-    legend.position="right"
+    legend.position = "right",
+    legend.title = element_blank(),
+    legend.text = element_text(lineheight = 0.9)
   )
 
 dataDir <- "c:/Users/pedro/Dropbox/colrow"
@@ -282,8 +312,7 @@ w_soy      <- add_tag(w_soy, "(f)")
 
 tmap_mode("plot")
 
-#pdf("fig1.pdf", width = 12, height = 8)
-png("fig1.png", width = 1200, height = 800)
+pdf("fig1.pdf", width = 12, height = 8)
 
 (g_map_beef | p_beef | w_beef) /
   (g_map_soy  | p_soy  | w_soy) 
