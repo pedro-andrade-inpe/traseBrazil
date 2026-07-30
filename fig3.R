@@ -26,10 +26,10 @@ dados <- data.frame(
 )
 
 cores <- c(
-  "Domestic policy"="#1B7F2A",
-  "Private sector"="#A02C9A",
-  "EU + China markets"="#F0702A",
-  "EU market"="#176A96"
+  "Domestic policy"   = "#B40426",
+  "Private sector"    = "#D24D57",
+  "EU + China markets"= "#ECA19A",
+  "EU market"         = "#F8DEDB"
 )
 
 right_panel <- ggplot(
@@ -53,11 +53,20 @@ right_panel <- ggplot(
     colour = "grey40"
   ) +
   
+  geom_text(
+    aes(
+      x = pmax(Valor, Max) + 0.15,
+      label = sprintf("%.2f", Valor)
+    ),
+    hjust = 0,
+    size = 3.6
+  ) +
+  
   scale_fill_manual(values = cores) +
   
   scale_x_continuous(
-    limits = c(0, 32),
-    breaks = seq(0, 32, by = 8),
+    limits = c(0, 36),
+    breaks = seq(0, 36, by = 6),
     expand = c(0, 0)
   ) +
   
@@ -96,10 +105,10 @@ brace_data <- data.frame(
   ),
   y = c(7, 5.5, 3.5, 1.5),
   cor = c(
-    "#1B7F2A",
-    "#A02C9A",
-    "#F0702A",
-    "#176A96"
+    "#000000",
+    "#000000",
+    "#000000",
+    "#000000"
   )
 )
 
@@ -111,35 +120,35 @@ left_panel <-
   
   # Domestic policy
   annotate("segment", x=x0, xend=x0, y=6.6, yend=7.4,
-           colour="#1B7F2A", linewidth=1) +
+           colour="#B40426", linewidth=1) +
   annotate("segment", x=x0, xend=x1, y=7.4, yend=7.4,
-           colour="#1B7F2A", linewidth=1) +
+           colour="#B40426", linewidth=1) +
   annotate("segment", x=x0, xend=x1, y=6.6, yend=6.6,
-           colour="#1B7F2A", linewidth=1) +
+           colour="#B40426", linewidth=1) +
   
   # Private sector
   annotate("segment", x=x0, xend=x0, y=4.7, yend=6.4,
-           colour="#A02C9A", linewidth=1) +
+           colour="#D24D57", linewidth=1) +
   annotate("segment", x=x0, xend=x1, y=6.4, yend=6.4,
-           colour="#A02C9A", linewidth=1) +
+           colour="#D24D57", linewidth=1) +
   annotate("segment", x=x0, xend=x1, y=4.7, yend=4.7,
-           colour="#A02C9A", linewidth=1) +
+           colour="#D24D57", linewidth=1) +
   
   # EU + China
   annotate("segment", x=x0, xend=x0, y=2.7, yend=4.4,
-           colour="#F0702A", linewidth=1) +
+           colour="#ECA19A", linewidth=1) +
   annotate("segment", x=x0, xend=x1, y=4.4, yend=4.4,
-           colour="#F0702A", linewidth=1) +
+           colour="#ECA19A", linewidth=1) +
   annotate("segment", x=x0, xend=x1, y=2.7, yend=2.7,
-           colour="#F0702A", linewidth=1) +
+           colour="#ECA19A", linewidth=1) +
   
   # EU market
   annotate("segment", x=x0, xend=x0, y=0.5, yend=2.4,
-           colour="#176A96", linewidth=1) +
+           colour="#F8DEDB", linewidth=1) +
   annotate("segment", x=x0, xend=x1, y=2.4, yend=2.4,
-           colour="#176A96", linewidth=1) +
+           colour="#F8DEDB", linewidth=1) +
   annotate("segment", x=x0, xend=x1, y=0.5, yend=0.5,
-           colour="#176A96", linewidth=1) +
+           colour="#F8DEDB", linewidth=1) +
   geom_text(
     data = brace_data,
     aes(x=.65, y=y, label=Grupo, colour=cor),

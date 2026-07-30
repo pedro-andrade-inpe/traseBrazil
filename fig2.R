@@ -38,9 +38,9 @@ dados_long <- dados %>%
   )
 
 cores <- c(
-  Forest = "#488B39",
-  OWL = "#ED6E2B",
-  Other = "#EBEBEB"
+  Forest = "#3F7F1F",
+  OWL    = "#E3B300",
+  Other  = "#EAEAEA"
 )
 
 plot_biomes <-
@@ -104,8 +104,6 @@ plot_biomes <-
     legend.margin = margin(t = 15)
   )
 
-############## LOWER
-
 dados <- data.frame(
   Region = rep(c("EU", "China", "EU + China"), each = 6),
   Commodity = rep(c("Soy", "Beef"), times = 9),
@@ -134,8 +132,8 @@ dados$Region <- factor(dados$Region,
                        levels = c("EU","China","EU + China"))
 
 cores_commodity <- c(
-  Soy="#0B3C85",
-  Beef="#B3001B"
+  Soy  = "#3E88D8",
+  Beef = "#0B3F87"
 )
 
 make_plot <- function(regiao){
@@ -214,14 +212,14 @@ cuts <- c(0,0.0001, 5.92,16.76,37.33,71.11,130.38,211.54,260,309)
 
 cores <- c(
   "#ffffff",
-  "#edf8e9",
-  "#d9f0c7",
-  "#bae4a0",
-  "#8dd36f",
-  "#5fbf58",
-  "#37a148",
-  "#1d8a38",
-  "#006d2c"
+  "#F3F7EE",
+  "#E4EFD7",
+  "#D2E6B8",
+  "#BAD98F",
+  "#95C766",
+  "#6EAE43",
+  "#4F8F29",
+  "#2F6E13"
 )
 
 labels <- c(
@@ -259,7 +257,7 @@ map_forest <-
   ) +
   tm_shape(matopiba) +
   tm_borders(
-    col = "#3B5BDB",
+    col = "#8B0000",
     lwd = 1,
     col.legend = tm_legend("MATOPIBA")
   ) +
@@ -275,7 +273,7 @@ map_forest <-
     type = "polygons",
     labels = c("Biomes", "Matopiba"),
     fill = c("white", "white"),
-    col = c("grey40", "#3B5BDB"),
+    col = c("grey40", "#8B0000"),
     lwd = c(0.6, 1),
     position = tm_pos_in("left", "bottom")
   )
@@ -284,14 +282,14 @@ map_forest
 
 cores <- c(
   "#ffffff",
-  "#fef2e6",
-  "#fde0c5",
-  "#fdc997",
-  "#fdae61",
-  "#fd8d3c",
-  "#f16913",
-  "#d95f02",
-  "#b54a00"
+  "#FFF9EB",
+  "#FFF1C9",
+  "#FDE89E",
+  "#F8D75A",
+  "#F1C40F",
+  "#E3B300",
+  "#D49B00",
+  "#C18B00"
 )
 
 map_owl <-
@@ -317,7 +315,7 @@ map_owl <-
   ) +
   tm_shape(matopiba) +
   tm_borders(
-    col = "#3B5BDB",
+    col = "#8B0000",
     lwd = 1,
     col.legend = tm_legend("MATOPIBA")
   ) +
@@ -333,7 +331,7 @@ map_owl <-
     type = "polygons",
     labels = c("Biomes", "Matopiba"),
     fill = c("white", "white"),
-    col = c("grey40", "#3B5BDB"),
+    col = c("grey40", "#8B0000"),
     lwd = c(0.6, 1),
     position = tm_pos_in("left", "bottom")
   )
