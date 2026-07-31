@@ -214,11 +214,11 @@ map_aa <- function(dados, mfill) {
         values = cores,
         labels = labels,
         value.na = "white"
-      )
-    ) +
-    tm_legend(
-      title = "",
-      position = tm_pos_in("left", "bottom")
+      ),
+      fill.legend = tm_legend(
+        title = "",
+        position = tm_pos_in("left", "bottom")
+      ) 
     ) +
     tm_shape(biomes) +
     tm_borders(
@@ -282,6 +282,12 @@ map_d <- map_x(dados, "EUEUDR_OWL")
 map_e <- map_x(dados, "EU+ChinaEUDR_OWL")
 map_f <- map_x(dados, "SCF+BIG3EUDR_OWL")
 
+map_a <- map_a + tm_credits("(a)", position = c("left", "top"), fontface = "bold", size = 1.2)
+map_b <- map_b + tm_credits("(b)", position = c("left", "top"), fontface = "bold", size = 1.2)
+map_c <- map_c + tm_credits("(c)", position = c("left", "top"), fontface = "bold", size = 1.2)
+map_d <- map_d + tm_credits("(d)", position = c("left", "top"), fontface = "bold", size = 1.2)
+map_e <- map_e + tm_credits("(e)", position = c("left", "top"), fontface = "bold", size = 1.2)
+map_f <- map_f + tm_credits("(f)", position = c("left", "top"), fontface = "bold", size = 1.2)
 
 library(ggplotify)
 
@@ -298,14 +304,22 @@ maps <-
   (gmap_a + gmap_b + gmap_c) /
   (gmap_d + gmap_e + gmap_f) 
 
+pdf("maps3.pdf", width = 12, height = 8)
+maps
+dev.off()
+
 bottom <- (left_panel | right_panel) +
   plot_layout(widths = c(0.20, 0.80))
 
-
-fig <-
-  maps /
-  bottom +
-
-pdf("fig3.pdf", width = 12, height = 10)
-maps
+pdf("chart3.pdf", width = 12, height = 3)
+bottom
 dev.off()
+
+library(magick)
+
+maps   <- image_read_pdf("maps3.pdf", density = 300)
+bars   <- image_read_pdf("chart3.pdf", density = 300)
+
+final <- image_append(c(maps, bars), stack = TRUE)
+
+image_write(final, "figure3.pdf", format = "pdf")
