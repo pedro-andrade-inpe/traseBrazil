@@ -96,6 +96,7 @@ right_panel <- ggplot(
     panel.grid.major.y = element_blank()
   )
 
+
 library(ggplot2)
 
 brace_data <- data.frame(
@@ -157,6 +158,14 @@ left_panel <-
     hjust=1,
     size=5
   ) +
+   annotate(
+    "text",
+    x = 0.03,
+    y = 7.5,
+    label = "(g)",
+    fontface = "bold",
+    size = 5
+  ) + 
   scale_colour_identity() +
   scale_x_continuous(limits=c(0,1.1), expand=c(0,0)) +
   scale_y_continuous(limits=c(0.5,7.5), expand=c(0,0)) +
@@ -236,7 +245,7 @@ map_aa <- function(dados, mfill) {
       frame = FALSE,
       inner.margins = c(0,0,0,0),
       outer.margins = c(0,0,0,0)
-    )
+    ) 
 }
 
 
