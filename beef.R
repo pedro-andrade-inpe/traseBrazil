@@ -34,7 +34,7 @@ csv <- beefFile %>%
   mutate(YEAR = year) %>%
   dplyr::select(YEAR, ECONOMIC_BLOCK, EXPORTER_GROUP, MUNICIPALITY, Value)
 
-dados <- arrow::read_parquet("c:/users/pedro/downloads/cattle_production_4_annual_and_5YEAR_2025-10-02.parquet") %>%
+dados <- arrow::read_parquet("c:/Users/pedro/Dropbox/pesquisa/2026/aline/trase/cattle_production_4_annual_and_5YEAR_2025-10-02.parquet") %>%
   mutate(MUNICIPALITY = trase_id %>% substring(4)) %>%
   mutate(ECONOMIC_BLOCK = "BRAZIL") %>%
   mutate(EXPORTER_GROUP = "INTERNAL_CONSUMPTION") %>%
