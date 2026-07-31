@@ -1,3 +1,5 @@
+require(ggplot2)
+
 dados <- data.frame(
   Policy = factor(
     c(
@@ -161,7 +163,149 @@ left_panel <-
   coord_cartesian(clip="off") +
   theme_void()
 
-pdf("fig3.pdf", width = 12, height = 4)
-(left_panel | right_panel) +
+
+biomes <- sf::read_sf("data/br_biomes.dbf")
+matopiba <- sf::read_sf("data/matopiba.shp")
+
+dataDir <- "c:/Users/pedro/Dropbox/colrow"
+cr <- colrow::getCR("Brazil", dataDir)
+sf::write_sf(cr, "data/BrazilCR.gpkg")
+
+dados <- colrow::processFile(
+  "data/BrazilCR.gpkg",
+  "data/output_fig_3_SSP2_dynamic.csv",
+  colrow::attrs(COUNTRY, ID, USE, SCENARIO, TRADER, VALUE)
+)
+
+cuts <- c(-210, -71.11, -37.33, -16.76, -1e-10, 1e-10, 16.76, 37.33, 71.11, 210)
+
+cores <- c(
+  "#2166AC",
+  "#67A9CF",
+  "#B2D8E8",
+  "#DCEEF7",
+  "#FFFFFF",
+  "#FDD0C4",
+  "#FC9272",
+  "#EF3B2C",
+  "#99000D"
+)
+
+labels <- c(
+  "-210–-71.11",
+  "-71.11–-37.33",
+  "-37.33–-16.76",
+  "-16.76–<0",
+  "0",
+  ">0–16.76",
+  "16.76–37.33",
+  "37.33–71.11",
+  "71.11–210"
+)
+
+require(tmap)
+
+map_aa <- function(dados, mfill) {
+  tm_shape(dados) +
+    tm_fill(
+      fill = mfill,
+      fill.scale = tm_scale_intervals(
+        breaks = cuts,
+        values = cores,
+        labels = labels,
+        value.na = "white"
+      )
+    ) +
+    tm_legend(
+      title = "",
+      position = tm_pos_in("left", "bottom")
+    ) +
+    tm_shape(biomes) +
+    tm_borders(
+      col = "grey40",
+      lwd = 0.6
+    ) +
+    
+    tm_shape(matopiba) +
+    tm_borders(
+      col = "#3B5BDB",
+      lwd = 1
+    ) +
+    
+    tm_layout(
+      frame = FALSE,
+      inner.margins = c(0,0,0,0),
+      outer.margins = c(0,0,0,0)
+    )
+}
+
+
+map_x <- function(dados, mfill) {
+  tm_shape(dados) +
+    tm_fill(
+      fill = mfill,
+      fill.scale = tm_scale_intervals(
+        breaks = cuts,
+        values = cores,
+        labels = labels,
+        value.na = "white"
+      ),
+      fill.legend = tm_legend_hide()
+    ) +
+    
+    tm_shape(biomes) +
+    tm_borders(
+      col = "grey40",
+      lwd = 0.6,
+      col.legend = tm_legend_hide()
+    ) +
+    
+    tm_shape(matopiba) +
+    tm_borders(
+      col = "#3B5BDB",
+      lwd = 1,
+      col.legend = tm_legend_hide()
+    ) +
+    
+    tm_layout(
+      frame = FALSE,
+      inner.margins = c(0,0,0,0),
+      outer.margins = c(0,0,0,0),
+      legend.show = FALSE
+    )
+}
+
+map_a <- map_aa(dados, "EUEUDR")
+map_b <- map_x(dados, "EU+ChinaEUDR")
+map_c <- map_x(dados, "SCF+BIG3EUDR")
+map_d <- map_x(dados, "EUEUDR_OWL")
+map_e <- map_x(dados, "EU+ChinaEUDR_OWL")
+map_f <- map_x(dados, "SCF+BIG3EUDR_OWL")
+
+
+library(ggplotify)
+
+gmap_a <- as.ggplot(map_a)
+gmap_b <- as.ggplot(map_b)
+gmap_c <- as.ggplot(map_c)
+gmap_d <- as.ggplot(map_d)
+gmap_e <- as.ggplot(map_e)
+gmap_f <- as.ggplot(map_f)
+
+library(patchwork)
+
+maps <-
+  (gmap_a + gmap_b + gmap_c) /
+  (gmap_d + gmap_e + gmap_f) 
+
+bottom <- (left_panel | right_panel) +
   plot_layout(widths = c(0.20, 0.80))
+
+
+fig <-
+  maps /
+  bottom +
+
+pdf("fig3.pdf", width = 12, height = 10)
+maps
 dev.off()
