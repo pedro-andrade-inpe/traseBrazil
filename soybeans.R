@@ -27,7 +27,7 @@ csv2 <- csv %>%
       "CHINA (MAINLAND)" = "CHINA"
     )) %>%
   mutate(EXPORTER_GROUP = case_when(
-    EXPORTER_GROUP %in% c("ADM", "AMAGGI", "BUNGE", "CARGILL", "COFCO", "LOUIS DREYFUS", "VITERRA BV", "GLENCORE") ~ EXPORTER_GROUP,
+    EXPORTER_GROUP %in% c("ADM", "AMAGGI", "BUNGE", "CARGILL", "COFCO", "LOUIS DREYFUS", "VITERRA BV") ~ EXPORTER_GROUP,
     TRUE ~ "OTHER"
   )) %>%
   mutate(ECONOMIC_BLOCK = case_when(
