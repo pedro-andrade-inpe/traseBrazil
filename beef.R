@@ -1,13 +1,10 @@
-DATA_DIR <- "C:\\Users\\pedro\\Dropbox\\pesquisa\\2020\\rplus\\trase\\"
-getFile <- function(file) paste0(DATA_DIR, file)
-
 require(dplyr)
 
 #######################################################
 cat("Reading CSV file\n")
 #######################################################
 
-beefFile <- read.csv("C:/Users/pedro/Dropbox/pesquisa/2026/aline/trase/brazil_beef_v2_2_2.csv")
+beefFile <- read.csv("data/brazil_beef_v2_2_2.csv")
 
 csv <- beefFile %>%
   mutate(Value = volume) %>%
@@ -34,7 +31,7 @@ csv <- beefFile %>%
   mutate(YEAR = year) %>%
   dplyr::select(YEAR, ECONOMIC_BLOCK, EXPORTER_GROUP, MUNICIPALITY, Value)
 
-dados <- arrow::read_parquet("c:/Users/pedro/Dropbox/pesquisa/2026/aline/trase/cattle_production_4_annual_and_5YEAR_2025-10-02.parquet") %>%
+dados <- arrow::read_parquet("data/cattle_production_4_annual_and_5YEAR_2025-10-02.parquet") %>%
   mutate(MUNICIPALITY = trase_id %>% substring(4)) %>%
   mutate(ECONOMIC_BLOCK = "BRAZIL") %>%
   mutate(EXPORTER_GROUP = "INTERNAL_CONSUMPTION") %>%
@@ -63,7 +60,7 @@ result <- consumo_interno %>%
   dplyr::mutate(Value = consumo_interno) %>%
   dplyr::select(YEAR, ECONOMIC_BLOCK, EXPORTER_GROUP, MUNICIPALITY, Value)
 
-muniToSimU <- read.csv(getFile("muni-to-simu.csv")) %>% # read from file exported by createRelations.R
+muniToSimU <- read.csv("data/muni-to-simu.csv") %>% # read from file exported by createRelations.R
   dplyr::mutate(MUNICIPALITY = paste0(code_muni)) %>%
   dplyr::select(ID, MUNICIPALITY, area)
 
@@ -77,10 +74,10 @@ muniToSimU$area <- 1
 csv2 <- rbind(csv, result) %>%
   dplyr::filter(YEAR != 2018)
 
-
 #######################################################
 cat("Processing economic block\n")
 #######################################################
+
 csv_economic_block <- csv2 %>%
   dplyr::group_by(ECONOMIC_BLOCK, EXPORTER_GROUP, YEAR, MUNICIPALITY) %>%
   dplyr::summarise(Value = sum(Value), .groups = "drop")
@@ -109,6 +106,7 @@ write.table(res, "trase-beef-economic-block.gms", row.names = FALSE, quote = FAL
 #######################################################
 cat("Processing exporter group\n")
 #######################################################
+
 csv_exporter_group <- csv2 %>%
   dplyr::filter(ECONOMIC_BLOCK != "BRAZIL") %>%
   dplyr::group_by(EXPORTER_GROUP, YEAR, MUNICIPALITY) %>%
@@ -138,6 +136,7 @@ write.table(res, "trase-beef-exporter-group.gms", row.names = FALSE, quote = FAL
 #######################################################
 cat("Processing exporter group and economic block together\n")
 #######################################################
+
 csv_economic_block_exporter_group <- csv2 %>%
   dplyr::filter(ECONOMIC_BLOCK != "BRAZIL") %>%
   dplyr::group_by(ECONOMIC_BLOCK, EXPORTER_GROUP, YEAR, MUNICIPALITY) %>%
@@ -164,10 +163,10 @@ colnames(res) <- paste0("PARAMETER ",
 
 write.table(res, "trase-beef-economic-block-exporter-group.gms", row.names = FALSE, quote = FALSE)
 
-
 #######################################################
 cat("Exporting unique values\n")
 #######################################################
+
 csv2$EXPORTER_GROUP %>% 
   paste0("\"", ., "\"") %>%
   unique() %>%
@@ -179,6 +178,3 @@ csv2$ECONOMIC_BLOCK %>%
   unique() %>%
   sort() %>% 
   write.table("trase_beef_destination.txt", quote = FALSE, row.names = FALSE, col.names = FALSE)
-
-
-

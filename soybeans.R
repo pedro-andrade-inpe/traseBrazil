@@ -1,28 +1,15 @@
-DATA_DIR <- "C:\\Users\\pedro\\Dropbox\\pesquisa\\2020\\rplus\\trase\\"
-getFile <- function(file) paste0(DATA_DIR, file)
 
 #######################################################
 cat("Reading CSV file\n")
 #######################################################
 
-soyFile <- read.csv("C:/Users/pedro/Dropbox/pesquisa/2026/aline/trase/brazil_soy_v2_6_1_composite.csv")
-
-#### adicinoei recente para testar glencore
-
-result <- soyFile %>%
-  dplyr::filter(str_detect(exporter, "GLENCORE"))
-
-sum(result$volume) / sum(soyFile$volume) * 100
-
-result$year %>% unique()
-
-#### adicinoei recente para testar glencore
+soyFile <- read.csv("data/brazil_soy_v2_6_1_composite.csv")
 
 csv <- soyFile %>%
   mutate(Value = volume) %>%
   mutate(EXPORTER_GROUP = stringr::str_trim(exporter_group)) %>%
   mutate(ECONOMIC_BLOCK = stringr::str_trim(economic_bloc)) %>%
-  dplyr::mutate(municipality_of_production_trase_id = str_replace(municipality_of_production_trase_id, ".*X$", "AGGREGATED")) %>%
+  dplyr::mutate(municipality_of_production_trase_id = stringr::str_replace(municipality_of_production_trase_id, ".*X$", "AGGREGATED")) %>%
   dplyr::filter(municipality_of_production_trase_id != "AGGREGATED") %>%
   mutate(MUNICIPALITY = stringr::str_trim(municipality_of_production_trase_id) %>% substring(4)) %>%
   dplyr::select(year, EXPORTER_GROUP, ECONOMIC_BLOCK, MUNICIPALITY, Value)
@@ -48,7 +35,7 @@ csv2 <- csv %>%
     TRUE ~ "OTHER"
   )) 
 
-muniToSimU <- read.csv(getFile("muni-to-simu.csv")) %>% # read from file exported by createRelations.R
+muniToSimU <- read.csv("data/muni-to-simu.csv") %>% # read from file exported by createRelations.R
   dplyr::mutate(MUNICIPALITY = paste0(code_muni)) %>%
   dplyr::select(ID, MUNICIPALITY, area)
 
@@ -62,6 +49,7 @@ muniToSimU$area <- 1
 #######################################################
 cat("Processing economic block\n")
 #######################################################
+
 csv_economic_block <- csv2 %>%
   dplyr::group_by(ECONOMIC_BLOCK, year, MUNICIPALITY) %>%
   dplyr::summarise(Value = sum(Value), .groups = "drop")
@@ -90,6 +78,7 @@ write.table(res, "trase-soy-economic-block.gms", row.names = FALSE, quote = FALS
 #######################################################
 cat("Processing exporter group\n")
 #######################################################
+
 csv_exporter_group <- csv2 %>%
   dplyr::filter(ECONOMIC_BLOCK != "BRAZIL") %>%
   dplyr::group_by(EXPORTER_GROUP, year, MUNICIPALITY) %>%
@@ -119,6 +108,7 @@ write.table(res, "trase-soy-exporter-group.gms", row.names = FALSE, quote = FALS
 #######################################################
 cat("Processing exporter group and economic block together\n")
 #######################################################
+
 csv_economic_block_exporter_group <- csv2 %>%
   dplyr::filter(ECONOMIC_BLOCK != "BRAZIL") %>%
   dplyr::group_by(ECONOMIC_BLOCK, EXPORTER_GROUP, year, MUNICIPALITY) %>%
@@ -149,6 +139,7 @@ write.table(res, "trase-soy-economic-block-exporter-group.gms", row.names = FALS
 #######################################################
 cat("Exporting unique values\n")
 #######################################################
+
 csv2$EXPORTER_GROUP %>% 
   paste0("\"", ., "\"") %>%
   unique() %>%
@@ -160,4 +151,3 @@ csv2$ECONOMIC_BLOCK %>%
   unique() %>%
   sort() %>% 
   write.table("trase_soy_destionation.txt", quote = FALSE, row.names = FALSE, col.names = FALSE)
-
