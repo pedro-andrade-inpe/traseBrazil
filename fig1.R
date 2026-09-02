@@ -158,10 +158,10 @@ w_soy <- ggplot(soy, aes(x, y, fill = Destination)) +
 
 dataDir <- "c:/Users/pedro/Dropbox/colrow"
 cr <- colrow::getCR("Brazil", dataDir)
-sf::write_sf(cr, "BrazilCR.gpkg")
+sf::write_sf(cr, "data/BrazilCR.gpkg")
 
 dados <- colrow::processFile(
-  "BrazilCR.gpkg",
+  "data/BrazilCR.gpkg",
   "data/output_fig_s1_SSP2.csv",
   colrow::attrs(COUNTRY, ID, DRIVER, VALUE)
 )
